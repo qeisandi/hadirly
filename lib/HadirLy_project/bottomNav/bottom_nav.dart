@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/Geolocator/maps.dart';
 import 'package:hadirly/HadirLy_project/main/dashboard.dart';
 import 'package:hadirly/HadirLy_project/main/profile.dart';
 import 'package:hadirly/HadirLy_project/main/riwayat.dart';
@@ -14,7 +15,7 @@ class BottomNavScreen extends StatefulWidget {
 class _BottomNavScreenState extends State<BottomNavScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [Main(), Riwayat(), Profile()];
+  final List<Widget> _pages = [Main(), Riwayat(), Profile(),GeoLocation()];
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +26,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
           Icon(Icons.home, size: 30, color: Colors.white),
           Icon(Icons.data_exploration_outlined, size: 30, color: Colors.white),
           Icon(Icons.account_circle_outlined, size: 30, color: Colors.white),
+          Icon(Icons.map, size: 30, color: Colors.white),
         ],
         index: _currentIndex,
         color: Color(0xFF1B3C53),
