@@ -4,7 +4,7 @@ import 'package:hadirly/HadirLy_project/main/riwayat.dart';
 class Main extends StatefulWidget {
   static String id = "/main";
 
-  Main({super.key});
+  const Main({super.key});
 
   @override
   State<Main> createState() => _MainState();
@@ -12,32 +12,16 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> {
   final List<Map<String, String>> attendanceData = [
-    {
-      'date': 'Monday 13',
-      'checkIn': '07:50:00',
-      'checkOut': '17:50:00',
-    },
-    {
-      'date': 'Monday 13',
-      'checkIn': '07:50:00',
-      'checkOut': '17:50:00',
-    },
-    {
-      'date': 'Monday 13',
-      'checkIn': '07:50:00',
-      'checkOut': '17:50:00',
-    },
-    {
-      'date': 'Monday 13',
-      'checkIn': '07:50:00',
-      'checkOut': '17:50:00',
-    },
+    {'date': 'Monday 13', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
+    {'date': 'Tuesday 14', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
+    {'date': 'Wed 15', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
+    {'date': 'Thursday 16', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF9F3EF),
+      // backgroundColor: Color(0xFFF9F3EF),
       body: Stack(
         children: [
           SizedBox(
@@ -50,8 +34,8 @@ class _MainState extends State<Main> {
                     decoration: BoxDecoration(
                       color: Color(0xFF1B3C53),
                       borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(100),
-                        bottomRight: Radius.circular(100),
+                        bottomLeft: Radius.circular(200),
+                        bottomRight: Radius.circular(200),
                       ),
                     ),
                     child: Column(
@@ -59,44 +43,47 @@ class _MainState extends State<Main> {
                         Text(
                           'MORNING',
                           style: TextStyle(
-                            fontFamily: 'Gilroy',
-                            fontSize: 24,
+                            fontFamily: 'BitcountGridDouble',
+                            fontSize: 40,
                             color: Colors.white,
                           ),
                         ),
-                        SizedBox(height: 8),
                         Text(
-                          'Muhammad Rio Akbar',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          'Muhammad Adolf Santoso',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontFamily: 'Gilroy',
+                          ),
                         ),
-                        SizedBox(height: 8),
+                        SizedBox(height: 10),
                         CircleAvatar(
                           radius: 40,
-                          backgroundImage:
-                              AssetImage('assets/image/profile.png'),
+                          backgroundImage: AssetImage(
+                            'assets/image/profile.png',
+                          ),
                         ),
                         SizedBox(height: 8),
                         Text(
                           '123456789',
                           style: TextStyle(fontSize: 14, color: Colors.white70),
                         ),
-                        
                       ],
                     ),
                   ),
-                  SizedBox(height: 24,),
+                  SizedBox(height: 24),
                   Text(
-                          'Distance from place',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        Text(
-                          '250.43m',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    'Distance from place',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  Text(
+                    '250.43m',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
                   SizedBox(height: 32),
                   Row(
@@ -109,7 +96,9 @@ class _MainState extends State<Main> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFF456882),
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 30, vertical: 16),
+                                horizontal: 30,
+                                vertical: 16,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -128,7 +117,9 @@ class _MainState extends State<Main> {
                                 Text(
                                   '07 : 50 : 00',
                                   style: TextStyle(
-                                      fontSize: 16, color: Colors.white),
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
@@ -143,7 +134,9 @@ class _MainState extends State<Main> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFFD2C1B6),
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 30, vertical: 16),
+                                horizontal: 30,
+                                vertical: 16,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -162,8 +155,9 @@ class _MainState extends State<Main> {
                                 Text(
                                   '17 : 50 : 00',
                                   style: TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF1B3C53)),
+                                    fontSize: 16,
+                                    color: Color(0xFF1B3C53),
+                                  ),
                                 ),
                               ],
                             ),
@@ -185,7 +179,10 @@ class _MainState extends State<Main> {
                           child: Text(
                             'Jl. Kebembem II No.83G 9, Kec. Jagakarsa, Kota Jakarta selatan, Indonesia',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
@@ -208,13 +205,20 @@ class _MainState extends State<Main> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => Riwayat()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Riwayat(),
+                              ),
+                            );
                           },
-                          child: Text('Lihat Semua',
-                          style: TextStyle(
-                            color: Colors.blueAccent,
-                            fontSize: 14,
-                          ),)
+                          child: Text(
+                            'Lihat Semua',
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -254,14 +258,16 @@ class _MainState extends State<Main> {
                                       Text(
                                         day,
                                         style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       Text(
                                         number,
                                         style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -317,7 +323,7 @@ class _MainState extends State<Main> {
                                       ),
                                     ],
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           ),
