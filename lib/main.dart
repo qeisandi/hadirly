@@ -7,6 +7,7 @@ import 'package:hadirly/HadirLy_project/main/profile.dart';
 import 'package:hadirly/HadirLy_project/main/riwayat.dart';
 import 'package:hadirly/HadirLy_project/splas/splash.dart';
 // import 'package:hadirly/HadirLy_project/splas/splash.dart';
+// import 'package:hadirly/HadirLy_project/splas/splash.dart';
 
 void main() {
   runApp(const MyApp());

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/servis.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/batch_servis.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_batch.dart';
 
 class Regis extends StatefulWidget {
   static const String id = "/register";
@@ -20,16 +22,39 @@ class _RegisState extends State<Regis> {
   AuthService authService = AuthService();
 
   String? _selectedGender;
-  String? _selectedBatch;
-  String? _selectedKejuruan;
+  BatchData? _selectedBatch;
+  String? _selectedTrainingTitle;
 
   final List<String> _genderOptions = ['Laki-laki', 'Perempuan'];
-  final List<String> _batchOptions = ['Batch 1', 'Batch 2', 'Batch 3'];
+  List<BatchData> _batchOptions = [];
+
   final List<String> _kejuruanOptions = [
-    'Mobile Programming',
     'Desain Grafis',
-    'Teknik Komputer dan Jaringan',
+    'Teknisi Komputer',
+    'Barista',
+    'Web Programming',
+    'Digital Marketing',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBatchData();
+  }
+
+  Future<void> _loadBatchData() async {
+    try {
+      final batches = await BatchServis().ambilBatch();
+      setState(() {
+        _batchOptions = batches;
+        if (_batchOptions.isNotEmpty) {
+          _selectedBatch = _batchOptions.first;
+        }
+      });
+    } catch (e) {
+      debugPrint('Error loading batch: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +73,6 @@ class _RegisState extends State<Regis> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 60),
                   const Text(
@@ -62,6 +86,7 @@ class _RegisState extends State<Regis> {
                   const Text(
                     'Daftarkan akun kamu sekarang!',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 30),
                   Container(
@@ -80,79 +105,56 @@ class _RegisState extends State<Regis> {
                     child: Form(
                       key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          _buildLabel('Nama Lengkap'),
                           _buildInputField(
-                            label: 'Nama Lengkap',
                             controller: _nameController,
                             icon: Icons.person,
-                            validator:
-                                (v) =>
-                                    v == null || v.trim().isEmpty
-                                        ? 'Nama wajib diisi'
-                                        : null,
+                            validator: (v) =>
+                                v == null || v.trim().isEmpty ? 'Nama wajib diisi' : null,
                           ),
-                          const SizedBox(height: 16),
+                          _buildLabel('Email'),
                           _buildInputField(
-                            label: 'Email',
                             controller: _emailController,
                             icon: Icons.email,
                             keyboardType: TextInputType.emailAddress,
-                            validator:
-                                (v) =>
-                                    v == null || !v.contains('@')
-                                        ? 'Email tidak valid'
-                                        : null,
+                            validator: (v) => v == null || !v.contains('@') ? 'Email tidak valid' : null,
                           ),
-                          const SizedBox(height: 16),
+                          _buildLabel('Password'),
                           _buildInputField(
-                            label: 'Password',
                             controller: _passwordController,
                             icon: Icons.lock,
                             obscureText: _isObscure,
                             suffixIcon: IconButton(
-                              icon: Icon(
-                                _isObscure
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                              onPressed: () {
-                                setState(() => _isObscure = !_isObscure);
-                              },
+                              icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                              onPressed: () => setState(() => _isObscure = !_isObscure),
                             ),
-                            validator:
-                                (v) =>
-                                    v == null || v.length < 6
-                                        ? 'Minimal 6 karakter'
-                                        : null,
+                            validator: (v) => v == null || v.length < 6 ? 'Minimal 6 karakter' : null,
                           ),
-                          const SizedBox(height: 16),
+                          _buildLabel('Jenis Kelamin'),
                           _buildDropdown(
-                            label: 'Jenis Kelamin',
                             value: _selectedGender,
                             items: _genderOptions,
-                            onChanged:
-                                (val) => setState(() => _selectedGender = val),
-                            validator: (v) => v == null ? 'Pilih gender' : null,
+                            onChanged: (val) => setState(() => _selectedGender = val),
+                            icon: Icons.wc,
                           ),
-                          const SizedBox(height: 16),
+                          _buildLabel('Batch'),
                           _buildDropdown(
-                            label: 'Batch',
-                            value: _selectedBatch,
-                            items: _batchOptions,
-                            onChanged:
-                                (val) => setState(() => _selectedBatch = val),
-                            validator: (v) => v == null ? 'Pilih batch' : null,
+                            value: _selectedBatch?.batchKe,
+                            items: _batchOptions.map((b) => b.batchKe ?? '').toList(),
+                            onChanged: (val) {
+                              final selected = _batchOptions.firstWhere((b) => b.batchKe == val);
+                              setState(() => _selectedBatch = selected);
+                            },
+                            icon: Icons.group,
                           ),
-                          const SizedBox(height: 16),
+                          _buildLabel('Kejuruan'),
                           _buildDropdown(
-                            label: 'Kejuruan',
-                            value: _selectedKejuruan,
+                            value: _selectedTrainingTitle,
                             items: _kejuruanOptions,
-                            onChanged:
-                                (val) =>
-                                    setState(() => _selectedKejuruan = val),
-                            validator:
-                                (v) => v == null ? 'Pilih kejuruan' : null,
+                            onChanged: (val) => setState(() => _selectedTrainingTitle = val),
+                            icon: Icons.school,
                           ),
                           const SizedBox(height: 30),
                           SizedBox(
@@ -160,26 +162,15 @@ class _RegisState extends State<Regis> {
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blueAccent,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               onPressed: _isLoading ? null : _registerUser,
-                              child:
-                                  _isLoading
-                                      ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                      : const Text(
-                                        'Daftar Sekarang',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                        ),
-                                      ),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text('Daftar Sekarang', style: TextStyle(fontSize: 16, color: Colors.white)),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -191,10 +182,7 @@ class _RegisState extends State<Regis> {
                                 onPressed: () => Navigator.pop(context),
                                 child: const Text(
                                   'Login',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blueGrey,
-                                  ),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
                                 ),
                               ),
                             ],
@@ -216,26 +204,21 @@ class _RegisState extends State<Regis> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      final authService = AuthService();
-
-      int batchId = _batchOptions.indexOf(_selectedBatch!) + 1;
-      int trainingId = _kejuruanOptions.indexOf(_selectedKejuruan!) + 1;
-
       final result = await authService.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
         jenisKelamin: _selectedGender!,
-        batchId: batchId,
-        trainingId: trainingId,
+        batchId: _selectedBatch!.id!,
+        trainingId: 1,
       );
 
       setState(() => _isLoading = false);
 
       if (result != null && result.data?.token != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Registrasi berhasil!")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registrasi berhasil!")),
+        );
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -246,7 +229,6 @@ class _RegisState extends State<Regis> {
   }
 
   Widget _buildInputField({
-    required String label,
     required TextEditingController controller,
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
@@ -260,7 +242,6 @@ class _RegisState extends State<Regis> {
       keyboardType: keyboardType,
       validator: validator,
       decoration: InputDecoration(
-        labelText: label,
         prefixIcon: Icon(icon, color: Colors.grey),
         suffixIcon: suffixIcon,
         filled: true,
@@ -274,19 +255,18 @@ class _RegisState extends State<Regis> {
   }
 
   Widget _buildDropdown({
-    required String label,
     required String? value,
     required List<String> items,
     required void Function(String?)? onChanged,
-    String? Function(String?)? validator,
+    required IconData icon,
   }) {
     return DropdownButtonFormField<String>(
       value: value,
+      isExpanded: true,
       onChanged: onChanged,
-      validator: validator,
+      validator: (v) => v == null || v.isEmpty ? 'Wajib dipilih' : null,
       decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.grey),
         filled: true,
         fillColor: const Color(0xFFEEF3F6),
         border: OutlineInputBorder(
@@ -294,13 +274,14 @@ class _RegisState extends State<Regis> {
           borderSide: BorderSide.none,
         ),
       ),
-      items:
-          items
-              .map(
-                (item) =>
-                    DropdownMenuItem<String>(value: item, child: Text(item)),
-              )
-              .toList(),
+      items: items.map((item) => DropdownMenuItem<String>(value: item, child: Text(item))).toList(),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 6),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w500)),
     );
   }
 }

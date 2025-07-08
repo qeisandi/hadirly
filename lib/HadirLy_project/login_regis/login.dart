@@ -28,40 +28,39 @@ class _LoginState extends State<Login> {
               ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 200),
-                child: Column(
-                  children: [
-                    Text(
-                      'Welcome Back',
-                      style: TextStyle(
-                        fontFamily: 'Gilroy',
-                        color: Colors.white,
-                        fontSize: 32,
-                      ),
-                    ),
-                    Text(
-                      'Login to your Account',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          
           SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 children: [
+                  Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    'Welcome Back',
+                    style: TextStyle(
+                      fontFamily: 'Gilroy',
+                      color: Colors.white,
+                      fontSize: 32,
+                    ),
+                  ),
+                  Text(
+                    'Login to your Account',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 20,),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 300),
+                    padding: const EdgeInsets.all(8.0),
                     child: Container(
                       padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -73,7 +72,7 @@ class _LoginState extends State<Login> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: 40),
+                            SizedBox(height: 24),
                             Text(
                               'Username',
                               style: TextStyle(fontWeight: FontWeight.w500),
@@ -83,7 +82,7 @@ class _LoginState extends State<Login> {
                               controller: _emailController,
                               textInputAction: TextInputAction.next,
                               decoration: InputDecoration(
-                                fillColor: Color(0x50456882),
+                                fillColor:  Color(0xFFEEF3F6),
                                 filled: true,
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide.none,
@@ -110,7 +109,7 @@ class _LoginState extends State<Login> {
                               obscureText: _isObscure,
                               textInputAction: TextInputAction.done,
                               decoration: InputDecoration(
-                                fillColor: Color(0x50456882),
+                                fillColor:  Color(0xFFEEF3F6),
                                 filled: true,
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide.none,
@@ -164,7 +163,7 @@ class _LoginState extends State<Login> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text("Don't have an account?"),
+                                Text("Don't have an account?",style: TextStyle(fontSize: 12),),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.push(
@@ -175,8 +174,9 @@ class _LoginState extends State<Login> {
                                   child: Text(
                                     'Register',
                                     style: TextStyle(
-                                      color: Color.fromARGB(255, 119, 106, 97),
+                                      color: Colors.blueGrey,
                                       fontWeight: FontWeight.bold,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),

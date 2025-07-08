@@ -4,4 +4,8 @@ class Endpoint {
   //LOGIN & REGISTER
   static const register = '$baseUrl/register';
   static const login = '$baseUrl/login';
+
+  //Get Batch
+  static const batch = '$baseUrl/batches';
+
 }
