@@ -7,5 +7,9 @@ class Endpoint {
 
   //Get Batch
   static const batch = '$baseUrl/batches';
+  static const kejuruan = '$baseUrl/trainings';
 
+  //Profile
+  static const getProfile = '$baseUrl/profile';
+  static const updateProfile = '$baseUrl/profile';
 }

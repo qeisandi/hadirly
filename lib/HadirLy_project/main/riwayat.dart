@@ -24,7 +24,6 @@ class _RiwayatState extends State<Riwayat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Color(0xFFF9F3EF),
       appBar: AppBar(
         title: Text(
           'Riwayat Kehadiran',
@@ -47,7 +46,7 @@ class _RiwayatState extends State<Riwayat> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Profile()),
+                MaterialPageRoute(builder: (context) => ProfilePage()),
               );
             },
           ),

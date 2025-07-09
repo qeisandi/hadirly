@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
 import 'package:hadirly/HadirLy_project/main/riwayat.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Main extends StatefulWidget {
   static String id = "/main";
-
   const Main({super.key});
 
   @override
@@ -11,6 +16,42 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
+  Profile? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfile();
+  }
+
+  Future<void> fetchProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    final url = Uri.parse(Endpoint.getProfile);
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        final data = GetProfile.fromJson(jsonResponse);
+        setState(() {
+          _profile = data.data;
+        });
+      } else {
+        print("Gagal mengambil data profil: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Terjadi kesalahan: $e");
+    }
+  }
+
   final List<Map<String, String>> attendanceData = [
     {'date': 'Monday 13', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
     {'date': 'Tuesday 14', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
@@ -21,7 +62,6 @@ class _MainState extends State<Main> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Color(0xFFF9F3EF),
       body: Stack(
         children: [
           SizedBox(
@@ -49,7 +89,7 @@ class _MainState extends State<Main> {
                           ),
                         ),
                         Text(
-                          'Muhammad Adolf Santoso',
+                          _profile?.name ?? 'Loading...',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white,
@@ -65,12 +105,13 @@ class _MainState extends State<Main> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '123456789',
+                          _profile?.trainingTitle ?? '',
                           style: TextStyle(fontSize: 14, color: Colors.white70),
                         ),
                       ],
                     ),
                   ),
+
                   SizedBox(height: 24),
                   Text(
                     'Distance from place',
@@ -223,6 +264,7 @@ class _MainState extends State<Main> {
                       ],
                     ),
                   ),
+
                   SizedBox(height: 5),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),

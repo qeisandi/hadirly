@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         Login.id: (context) => Login(),
         Regis.id: (context) => Regis(),
         Main.id: (context) => Main(),
-        Profile.id: (context) => Profile(),
+        ProfilePage.id: (context) => ProfilePage(),
         Riwayat.id: (context) => Riwayat(),
         BottomNavScreen.id: (context) => BottomNavScreen(),
       },

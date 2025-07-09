@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hadirly/HadirLy_project/helper/servis/servis.dart';
-import 'package:hadirly/HadirLy_project/helper/servis/batch_servis.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_batch.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_training.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/batch_servis.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/training_servis.dart';
 
 class Regis extends StatefulWidget {
   static const String id = "/register";
@@ -19,27 +21,22 @@ class _RegisState extends State<Regis> {
 
   bool _isObscure = true;
   bool _isLoading = false;
+
   AuthService authService = AuthService();
 
   String? _selectedGender;
   BatchData? _selectedBatch;
-  String? _selectedTrainingTitle;
+  Trainings? _selectedTraining;
 
-  final List<String> _genderOptions = ['Laki-laki', 'Perempuan'];
+  final List<String> _genderOptions = ['L', 'P'];
   List<BatchData> _batchOptions = [];
-
-  final List<String> _kejuruanOptions = [
-    'Desain Grafis',
-    'Teknisi Komputer',
-    'Barista',
-    'Web Programming',
-    'Digital Marketing',
-  ];
+  List<Trainings> _trainingOptions = [];
 
   @override
   void initState() {
     super.initState();
     _loadBatchData();
+    _loadTrainingData();
   }
 
   Future<void> _loadBatchData() async {
@@ -56,13 +53,89 @@ class _RegisState extends State<Regis> {
     }
   }
 
+  Future<void> _loadTrainingData() async {
+    try {
+      final trainings = await TrainingService().ambilTrainings();
+      setState(() {
+        _trainingOptions = trainings;
+        if (_trainingOptions.isNotEmpty) {
+          _selectedTraining = _trainingOptions.first;
+        }
+      });
+    } catch (e) {
+      debugPrint('Error loading training: $e');
+    }
+  }
+
+  void _registerUser() async {
+    if (_selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Pilih jenis kelamin terlebih dahulu")),
+      );
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      final result = await authService.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        jenisKelamin: _selectedGender ?? '',
+        batchId: _selectedBatch?.id ?? 0,
+        trainingId: _selectedTraining?.id ?? 0,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (result != null && result.data?.token != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.green,
+            content: Text("Registrasi berhasil!"),
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text("Registrasi gagal. Coba lagi."),
+          ),
+        );
+      }
+    }
+  }
+
+  String? _validateRequired(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Wajib diisi';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || !value.contains('@')) {
+      return 'Email tidak valid';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.length < 6) {
+      return 'Minimal 6 karakter';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/image/background.png'),
                 fit: BoxFit.cover,
@@ -71,11 +144,11 @@ class _RegisState extends State<Regis> {
           ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
                 children: [
-                  const SizedBox(height: 60),
-                  const Text(
+                  SizedBox(height: 60),
+                  Text(
                     'Register',
                     style: TextStyle(
                       fontFamily: 'Gilroy',
@@ -83,18 +156,18 @@ class _RegisState extends State<Regis> {
                       fontSize: 38,
                     ),
                   ),
-                  const Text(
+                  Text(
                     'Daftarkan akun kamu sekarang!',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [
+                      boxShadow: [
                         BoxShadow(
                           color: Colors.black12,
                           blurRadius: 20,
@@ -107,82 +180,222 @@ class _RegisState extends State<Regis> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildLabel('Nama Lengkap'),
-                          _buildInputField(
-                            controller: _nameController,
-                            icon: Icons.person,
-                            validator: (v) =>
-                                v == null || v.trim().isEmpty ? 'Nama wajib diisi' : null,
-                          ),
-                          _buildLabel('Email'),
-                          _buildInputField(
-                            controller: _emailController,
-                            icon: Icons.email,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (v) => v == null || !v.contains('@') ? 'Email tidak valid' : null,
-                          ),
-                          _buildLabel('Password'),
-                          _buildInputField(
-                            controller: _passwordController,
-                            icon: Icons.lock,
-                            obscureText: _isObscure,
-                            suffixIcon: IconButton(
-                              icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
-                              onPressed: () => setState(() => _isObscure = !_isObscure),
+                          Padding(
+                            padding: EdgeInsets.only(top: 16, bottom: 6),
+                            child: Text(
+                              "Nama Lengkap",
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
-                            validator: (v) => v == null || v.length < 6 ? 'Minimal 6 karakter' : null,
                           ),
-                          _buildLabel('Jenis Kelamin'),
-                          _buildDropdown(
-                            value: _selectedGender,
-                            items: _genderOptions,
-                            onChanged: (val) => setState(() => _selectedGender = val),
-                            icon: Icons.wc,
+                          TextFormField(
+                            textInputAction: TextInputAction.next,
+
+                            controller: _nameController,
+                            validator: _validateRequired,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(
+                                Icons.person,
+                                color: Colors.grey,
+                              ),
+                              filled: true,
+                              fillColor: Color(0xFFEEF3F6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
                           ),
-                          _buildLabel('Batch'),
-                          _buildDropdown(
+                          Padding(
+                            padding: EdgeInsets.only(top: 16, bottom: 6),
+                            child: Text(
+                              "Email",
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          TextFormField(
+                            textInputAction: TextInputAction.next,
+
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: _validateEmail,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.email, color: Colors.grey),
+                              filled: true,
+                              fillColor: Color(0xFFEEF3F6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 16, bottom: 6),
+                            child: Text(
+                              "Password",
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          TextFormField(
+                            textInputAction: TextInputAction.next,
+
+                            controller: _passwordController,
+                            obscureText: _isObscure,
+                            validator: _validatePassword,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscure
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscure = !_isObscure;
+                                  });
+                                },
+                              ),
+                              filled: true,
+                              fillColor: Color(0xFFEEF3F6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 16, bottom: 6),
+                            child: Text(
+                              "Jenis Kelamin",
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          Column(
+                            children:
+                                _genderOptions.map((gender) {
+                                  return RadioListTile<String>(
+                                    value: gender,
+                                    groupValue: _selectedGender,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedGender = value;
+                                      });
+                                    },
+                                    title: Text(gender),
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
+                                  );
+                                }).toList(),
+                          ),
+                          if (_selectedGender == null)
+                            Padding(
+                              padding: EdgeInsets.only(top: 16, bottom: 6),
+                              child: Text(
+                                "Batch",
+                                style: TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          DropdownButtonFormField<String>(
                             value: _selectedBatch?.batchKe,
-                            items: _batchOptions.map((b) => b.batchKe ?? '').toList(),
+                            isExpanded: true,
+                            items:
+                                _batchOptions.map((b) {
+                                  return DropdownMenuItem(
+                                    value: b.batchKe ?? '',
+                                    child: Text(b.batchKe ?? ''),
+                                  );
+                                }).toList(),
                             onChanged: (val) {
-                              final selected = _batchOptions.firstWhere((b) => b.batchKe == val);
+                              final selected = _batchOptions.firstWhere(
+                                (b) => b.batchKe == val,
+                              );
                               setState(() => _selectedBatch = selected);
                             },
-                            icon: Icons.group,
+                            validator: _validateRequired,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.group, color: Colors.grey),
+                              filled: true,
+                              fillColor: Color(0xFFEEF3F6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
                           ),
-                          _buildLabel('Kejuruan'),
-                          _buildDropdown(
-                            value: _selectedTrainingTitle,
-                            items: _kejuruanOptions,
-                            onChanged: (val) => setState(() => _selectedTrainingTitle = val),
-                            icon: Icons.school,
+                          Padding(
+                            padding: EdgeInsets.only(top: 16, bottom: 6),
+                            child: Text(
+                              "Kejuruan",
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
                           ),
-                          const SizedBox(height: 30),
+                          DropdownButtonFormField<Trainings>(
+                            value: _selectedTraining,
+                            isExpanded: true,
+                            items:
+                                _trainingOptions.map((item) {
+                                  return DropdownMenuItem<Trainings>(
+                                    value: item,
+                                    child: Text(item.title ?? ''),
+                                  );
+                                }).toList(),
+                            onChanged:
+                                (val) =>
+                                    setState(() => _selectedTraining = val),
+                            validator:
+                                (v) => v == null ? 'Wajib dipilih' : null,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(
+                                Icons.school,
+                                color: Colors.grey,
+                              ),
+                              filled: true,
+                              fillColor: Color(0xFFEEF3F6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 30),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blueAccent,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               onPressed: _isLoading ? null : _registerUser,
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text('Daftar Sekarang', style: TextStyle(fontSize: 16, color: Colors.white)),
+                              child:
+                                  _isLoading
+                                      ? CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                      : Text(
+                                        'Daftar Sekarang',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("Sudah punya akun?"),
+                              Text("Sudah punya akun?"),
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: const Text(
+                                child: Text(
                                   'Login',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blueGrey,
+                                  ),
                                 ),
                               ),
                             ],
@@ -197,91 +410,6 @@ class _RegisState extends State<Regis> {
           ),
         ],
       ),
-    );
-  }
-
-  void _registerUser() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-
-      final result = await authService.register(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        jenisKelamin: _selectedGender!,
-        batchId: _selectedBatch!.id!,
-        trainingId: 1,
-      );
-
-      setState(() => _isLoading = false);
-
-      if (result != null && result.data?.token != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Registrasi berhasil!")),
-        );
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Registrasi gagal. Coba lagi.")),
-        );
-      }
-    }
-  }
-
-  Widget _buildInputField({
-    required TextEditingController controller,
-    bool obscureText = false,
-    TextInputType keyboardType = TextInputType.text,
-    Widget? suffixIcon,
-    String? Function(String?)? validator,
-    IconData? icon,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.grey),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: const Color(0xFFEEF3F6),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String? value,
-    required List<String> items,
-    required void Function(String?)? onChanged,
-    required IconData icon,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      isExpanded: true,
-      onChanged: onChanged,
-      validator: (v) => v == null || v.isEmpty ? 'Wajib dipilih' : null,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.grey),
-        filled: true,
-        fillColor: const Color(0xFFEEF3F6),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      items: items.map((item) => DropdownMenuItem<String>(value: item, child: Text(item))).toList(),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 6),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w500)),
     );
   }
 }
