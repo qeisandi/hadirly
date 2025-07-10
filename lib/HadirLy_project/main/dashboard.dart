@@ -194,7 +194,7 @@ class _MainState extends State<Main> {
                                 ),
                                 SizedBox(height: 8),
                                 Text(
-                                  '17 : 50 : 00',
+                                  '-- : -- : --',
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Color(0xFF1B3C53),
