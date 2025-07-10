@@ -15,4 +15,7 @@ class Endpoint {
 
   // Attendance
   static const checkIn = '$baseUrl/absen/check-in';
+
+  // Absen
+  static const postCheckOut = '$baseUrl/absen/check-out';
 }

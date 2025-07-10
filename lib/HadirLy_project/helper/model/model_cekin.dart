@@ -32,6 +32,7 @@ class CheckInGet {
   String? checkInAddress;
   String? status;
   dynamic alasanIzin;
+  String? checkIn; // Added check_in field
 
   CheckInGet({
     this.id,
@@ -43,6 +44,7 @@ class CheckInGet {
     this.checkInAddress,
     this.status,
     this.alasanIzin,
+    this.checkIn,
   });
 
   factory CheckInGet.fromJson(Map<String, dynamic> json) => CheckInGet(
@@ -58,18 +60,44 @@ class CheckInGet {
     checkInAddress: json["check_in_address"],
     status: json["status"],
     alasanIzin: json["alasan_izin"],
+    checkIn: json["check_in"],
   );
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "attendance_date":
-        "${attendanceDate!.year.toString().padLeft(4, '0')}-${attendanceDate!.month.toString().padLeft(2, '0')}-${attendanceDate!.day.toString().padLeft(2, '0')}",
-    "check_in_time": checkInTime,
-    "check_in_lat": checkInLat,
-    "check_in_lng": checkInLng,
-    "check_in_location": checkInLocation,
-    "check_in_address": checkInAddress,
-    "status": status,
-    "alasan_izin": alasanIzin,
-  };
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+
+    if (id != null) data["id"] = id;
+
+    if (attendanceDate != null) {
+      data["attendance_date"] =
+          "${attendanceDate!.year.toString().padLeft(4, '0')}-${attendanceDate!.month.toString().padLeft(2, '0')}-${attendanceDate!.day.toString().padLeft(2, '0')}";
+    }
+
+    if (checkInTime != null) data["check_in_time"] = checkInTime;
+    if (checkInLat != null) data["check_in_lat"] = checkInLat;
+    if (checkInLng != null) data["check_in_lng"] = checkInLng;
+    if (checkInLocation != null) data["check_in_location"] = checkInLocation;
+    if (checkInAddress != null) data["check_in_address"] = checkInAddress;
+    if (status != null) data["status"] = status;
+
+    // Fix check_in field to use time format H:i
+    if (checkInTime != null) {
+      // Convert HH:mm:ss to HH:mm format
+      final timeParts = checkInTime!.split(':');
+      if (timeParts.length >= 2) {
+        data["check_in"] = "${timeParts[0]}:${timeParts[1]}";
+      } else {
+        data["check_in"] = checkInTime;
+      }
+    } else if (checkIn != null) {
+      data["check_in"] = checkIn;
+    }
+
+    // Only include alasan_izin if it's not null and not empty
+    if (alasanIzin != null && alasanIzin.toString().isNotEmpty) {
+      data["alasan_izin"] = alasanIzin;
+    }
+
+    return data;
+  }
 }

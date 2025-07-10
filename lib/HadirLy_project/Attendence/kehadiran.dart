@@ -40,7 +40,6 @@ class _CheckInState extends State<CheckIn> {
       await Geolocator.openLocationSettings();
       return;
     }
-
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -63,7 +62,7 @@ class _CheckInState extends State<CheckIn> {
         _currentPosition!.longitude,
       );
 
-      if (placemarks.isNotEmpty) {
+      if (placemarks.isNotEmpty && mounted) {
         Placemark place = placemarks[0];
         setState(() {
           _currentAddress = "${place.name}, ${place.street}, ${place.locality}";
@@ -83,13 +82,17 @@ class _CheckInState extends State<CheckIn> {
         });
       }
     } catch (e) {
-      setState(() {
-        _currentAddress = "Gagal mendapatkan lokasi";
-      });
+      if (mounted) {
+        setState(() {
+          _currentAddress = "Gagal mendapatkan lokasi";
+        });
+      }
     } finally {
-      setState(() {
-        _isLoadingLocation = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
@@ -108,7 +111,6 @@ class _CheckInState extends State<CheckIn> {
 
     final now = DateTime.now();
     final formattedTime = DateFormat('HH:mm:ss').format(now);
-    final formattedDate = DateFormat('yyyy-MM-dd').format(now);
     final token = await SharedPref.getToken();
 
     if (token == null) {
@@ -121,17 +123,20 @@ class _CheckInState extends State<CheckIn> {
     }
 
     final data = CheckInGet(
-      attendanceDate: DateTime.parse(formattedDate),
+      attendanceDate: now,
       checkInTime: formattedTime,
       checkInLat: _currentPosition!.latitude,
       checkInLng: _currentPosition!.longitude,
       checkInLocation: _currentAddress,
       checkInAddress: _currentAddress,
-      status: "Hadir",
+      status: "hadir",
       alasanIzin: null,
     );
 
     final success = await checkServis.postCheckIn(data);
+
+    // Check if widget is still mounted before calling setState
+    if (!mounted) return;
 
     if (success) {
       setState(() {
@@ -147,8 +152,11 @@ class _CheckInState extends State<CheckIn> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Gagal Check In"),
+          content: Text(
+            "Gagal Check In. Silakan coba lagi atau hubungi admin.",
+          ),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
         ),
       );
     }
