@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_photo_pro.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
 import 'package:hadirly/HadirLy_project/main/update.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -17,6 +21,154 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final AuthService _authService = AuthService();
+  PhotoProfile? _photoProfile;
+  bool _isLoadingPhoto = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPhotoProfile();
+  }
+
+  Future<void> _loadPhotoProfile() async {
+    setState(() {
+      _isLoadingPhoto = true;
+    });
+
+    try {
+      final photo = await _authService.getPhotoProfile();
+      setState(() {
+        _photoProfile = photo;
+        _isLoadingPhoto = false;
+      });
+    } catch (e) {
+      print("Error loading photo profile: $e");
+      setState(() {
+        _isLoadingPhoto = false;
+      });
+    }
+  }
+
+  Future<void> _showPhotoDialog() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Ubah Foto Profil',
+            style: TextStyle(fontFamily: 'Gilroy'),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Pilih sumber foto:', style: TextStyle(fontSize: 16)),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _pickImage(ImageSource.camera);
+                        },
+                        icon: const Icon(Icons.camera_alt, size: 40),
+                        color: Colors.blue,
+                      ),
+                      const Text('Kamera'),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _pickImage(ImageSource.gallery);
+                        },
+                        icon: const Icon(Icons.photo_library, size: 40),
+                        color: Colors.green,
+                      ),
+                      const Text('Galeri'),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        await _uploadPhoto(File(image.path));
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Gagal memilih gambar: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _uploadPhoto(File imageFile) async {
+    setState(() {
+      _isLoadingPhoto = true;
+    });
+
+    try {
+      final result = await _authService.photoProfile(imageFile: imageFile);
+
+      setState(() {
+        _photoProfile = result;
+        _isLoadingPhoto = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Foto profil berhasil diperbarui!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingPhoto = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Gagal memperbarui foto profil: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<Profile?> fetchProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -132,11 +284,46 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Column(
                   children: [
-                    const CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('assets/image/profile.png'),
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          _isLoadingPhoto
+                              ? const CircleAvatar(
+                                radius: 60,
+                                backgroundColor: Colors.grey,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                              : CircleAvatar(
+                                radius: 60,
+                                backgroundImage:
+                                    _photoProfile?.data?.profilePhoto != null
+                                        ? NetworkImage(
+                                          _photoProfile!.data!.profilePhoto!,
+                                        )
+                                        : const AssetImage(
+                                              'assets/image/profile.png',
+                                            )
+                                            as ImageProvider,
+                              ),
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: Colors.white,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                size: 18,
+                                color: Colors.teal,
+                              ),
+                              onPressed: _showPhotoDialog,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Text(
                       user.name ?? '-',
                       style: const TextStyle(
@@ -163,6 +350,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         "Batch ${user.batchKe}",
                         style: const TextStyle(color: Colors.white70),
                       ),
+
+                    SizedBox(height: 16),
                   ],
                 ),
               ),

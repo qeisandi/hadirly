@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_history.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/history_servis.dart';
 import 'package:hadirly/HadirLy_project/main/profile.dart';
 
 class Riwayat extends StatefulWidget {
@@ -11,16 +13,14 @@ class Riwayat extends StatefulWidget {
 }
 
 class _RiwayatState extends State<Riwayat> {
-  final List<Map<String, String>> attendanceData = [
-    {'date': 'Monday 13', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Tuesday 14', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Wed 15', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Thursday 16', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Monday 13', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Tuesday 14', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Wed 15', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-    {'date': 'Thursday 16', 'checkIn': '07:50:00', 'checkOut': '17:50:00'},
-  ];
+  late Future<HistoryAttend?> futureHistory;
+
+  @override
+  void initState() {
+    super.initState();
+    futureHistory = AttendanceService().fetchHistoryAttendance();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,30 +63,48 @@ class _RiwayatState extends State<Riwayat> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            SizedBox(height: 5),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: attendanceData.length,
-                itemBuilder: (context, index) {
-                  final item = attendanceData[index];
-                  final parts = item['date']!.split(" ");
-                  final day = parts[0];
-                  final number = parts.length > 1 ? parts[1] : "";
+      body: RefreshIndicator(
+        onRefresh: _refreshRiwayat,
+        child: FutureBuilder<HistoryAttend?>(
+          future: futureHistory,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                  return Card(
+            if (!snapshot.hasData || snapshot.data?.data?.isEmpty == true) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.event_busy, size: 80, color: Colors.grey[400]),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              );
+            }
+
+            final data = snapshot.data!.data!;
+
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                final item = data[index];
+                final date = item.attendanceDate?.toLocal();
+                final day = _getDayName(date);
+                final number = date?.day.toString().padLeft(2, '0') ?? "";
+
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
                     margin: EdgeInsets.symmetric(vertical: 6),
                     color: Colors.grey[200],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(12),
+                      padding: EdgeInsets.all(10),
                       child: Row(
                         children: [
                           Container(
@@ -137,7 +155,7 @@ class _RiwayatState extends State<Riwayat> {
                                     ),
                                     Spacer(),
                                     Text(
-                                      item['checkIn'] ?? '',
+                                      item.checkInTime ?? '-',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -156,7 +174,7 @@ class _RiwayatState extends State<Riwayat> {
                                     ),
                                     Spacer(),
                                     Text(
-                                      item['checkOut'] ?? '',
+                                      item.checkOutTime ?? '-',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -169,13 +187,41 @@ class _RiwayatState extends State<Riwayat> {
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
+  }
+
+  Future<void> _refreshRiwayat() async {
+    setState(() {
+      futureHistory = AttendanceService().fetchHistoryAttendance();
+    });
+  }
+
+  String _getDayName(DateTime? date) {
+    if (date == null) return '';
+    switch (date.weekday) {
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return '';
+    }
   }
 }

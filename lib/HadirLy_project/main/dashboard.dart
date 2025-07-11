@@ -5,8 +5,11 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_absen.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_photo_pro.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/check_servis.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/izin_servis.dart';
 import 'package:hadirly/HadirLy_project/main/riwayat.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,14 +25,20 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> {
   Profile? _profile;
   AbsenToday? _todayAttendance;
+  PhotoProfile? _photoProfile;
   final CheckServis _checkServis = CheckServis();
+  final AuthService _authService = AuthService();
   bool _isLoadingAttendance = true;
+  bool _isLoadingPhoto = false;
+  final IzinService _izinService = IzinService();
+  final TextEditingController _alasanController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchProfile();
     fetchTodayAttendance();
+    fetchPhotoProfile();
   }
 
   Future<void> fetchProfile() async {
@@ -55,6 +64,25 @@ class _MainState extends State<Main> {
       }
     } catch (e) {
       print("Error: $e");
+    }
+  }
+
+  Future<void> fetchPhotoProfile() async {
+    setState(() {
+      _isLoadingPhoto = true;
+    });
+
+    try {
+      final photo = await _authService.getPhotoProfile();
+      setState(() {
+        _photoProfile = photo;
+        _isLoadingPhoto = false;
+      });
+    } catch (e) {
+      print("Error loading photo profile: $e");
+      setState(() {
+        _isLoadingPhoto = false;
+      });
     }
   }
 
@@ -171,18 +199,26 @@ class _MainState extends State<Main> {
                     'MORNING',
                     style: TextStyle(
                       fontFamily: 'BitcountGridDouble',
-                      fontSize: 40,
+                      fontSize: 50,
                       color: Colors.white,
                     ),
                   ),
                   Text(
                     _profile?.name ?? 'Loading...',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontFamily: 'Inter',
+                    ),
                   ),
                   SizedBox(height: 10),
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/image/profile.png'),
+                    backgroundImage:
+                        _photoProfile?.data?.profilePhoto != null
+                            ? NetworkImage(_photoProfile!.data!.profilePhoto!)
+                            : AssetImage('assets/image/profile.png')
+                                as ImageProvider,
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -205,10 +241,19 @@ class _MainState extends State<Main> {
                 // CHECK IN
                 Column(
                   children: [
-                    ElevatedButton(
-                      onPressed:
+                    GestureDetector(
+                      onTap:
                           isCheckedIn
-                              ? null
+                              ? () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Kamu sudah check-in hari ini!",
+                                    ),
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                );
+                              }
                               : () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -219,32 +264,35 @@ class _MainState extends State<Main> {
                                   ),
                                 );
                               },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF1B3C53),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFF1B3C53),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         padding: EdgeInsets.symmetric(
                           horizontal: 30,
                           vertical: 16,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            isCheckedIn ? 'Checked In' : 'Check In',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontFamily: 'Inter',
+                        child: Column(
+                          children: [
+                            Text(
+                              isCheckedIn ? 'Checked In' : 'Check In',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontFamily: 'Inter',
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            getCheckInTime(),
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ],
+                            SizedBox(height: 8),
+                            Text(
+                              getCheckInTime(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -346,6 +394,95 @@ class _MainState extends State<Main> {
             SizedBox(height: 40),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Text(
+                    "Ajukan Izin",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _alasanController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: "Tulis alasan izin...",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("Batal", style: TextStyle(color: Colors.red)),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final alasan = _alasanController.text.trim();
+                        if (alasan.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Alasan tidak boleh kosong!"),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+                        Navigator.of(context).pop();
+                        final result = await _izinService.postIzin(
+                          alasanIzin: alasan,
+                        );
+
+                        if (!mounted) return;
+
+                        if (result != null && result.message != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Izin berhasil diajukan!"),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          _alasanController.clear();
+                          fetchTodayAttendance();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Gagal mengajukan izin."),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF1B3C53),
+                      ),
+                      child: Text(
+                        "Kirim",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+          );
+        },
+        label: Text("Ajukan Izin", style: TextStyle(color: Colors.white)),
+        icon: Icon(Icons.edit_calendar_rounded, color: Colors.white),
+        backgroundColor: Color(0xFF1B3C53),
       ),
     );
   }

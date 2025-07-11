@@ -208,7 +208,7 @@ class _CheckInState extends State<CheckIn> {
       ),
       body:
           _isLoadingLocation
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
                 child: Column(
                   children: [
@@ -299,7 +299,7 @@ class _CheckInState extends State<CheckIn> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Card(
@@ -308,7 +308,7 @@ class _CheckInState extends State<CheckIn> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

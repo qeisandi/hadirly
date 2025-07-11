@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_stat.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/history_servis.dart';
 import 'package:hadirly/HadirLy_project/main/profile.dart';
 
 class AbsenStatsPage extends StatefulWidget {
@@ -9,77 +11,108 @@ class AbsenStatsPage extends StatefulWidget {
 }
 
 class _AbsenStatsPageState extends State<AbsenStatsPage> {
+  late Future<StatistikAttend?> statistikFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    statistikFuture =
+        AttendanceService().getStatistikAttend(); // panggil dari service
+  }
+
+  Future<void> _refreshStats() async {
+    setState(() {
+      statistikFuture = AttendanceService().getStatistikAttend();
+    });
+    await statistikFuture;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> stats = {
-      "total_absen": 1,
-      "total_masuk": 1,
-      "total_izin": 0,
-      "sudah_absen_hari_ini": true,
-    };
-
     return Scaffold(
       appBar: AppBar(
         leading: Container(),
-        backgroundColor: Color(0xFF1B3C53),
+        backgroundColor: const Color(0xFF1B3C53),
         titleSpacing: 0,
-        title: Text(
+        title: const Text(
           "Statistik Absensi",
           style: TextStyle(color: Colors.white, fontFamily: 'Inter'),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.account_circle, color: Colors.white),
+            icon: const Icon(Icons.account_circle, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
               );
             },
           ),
           IconButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   backgroundColor: Colors.green,
                   content: Text("Fitur Settings belum tersedia"),
                 ),
               );
             },
-            icon: Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Colors.white),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            buildStatCard(
-              "Total Absen",
-              stats["total_absen"].toString(),
-              Icons.assignment,
-            ),
-            SizedBox(height: 12),
-            buildStatCard(
-              "Total Masuk",
-              stats["total_masuk"].toString(),
-              Icons.login,
-            ),
-            SizedBox(height: 12),
-            buildStatCard(
-              "Total Izin",
-              stats["total_izin"].toString(),
-              Icons.airline_seat_individual_suite,
-            ),
-            SizedBox(height: 12),
-            buildStatCard(
-              "Sudah Absen Hari Ini",
-              stats["sudah_absen_hari_ini"] ? "Ya" : "Belum",
-              stats["sudah_absen_hari_ini"] ? Icons.check_circle : Icons.cancel,
-              iconColor:
-                  stats["sudah_absen_hari_ini"] ? Colors.green : Colors.red,
-            ),
-          ],
+      body: RefreshIndicator(
+        onRefresh: _refreshStats,
+        child: FutureBuilder<StatistikAttend?>(
+          future: statistikFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return const Center(
+                child: Text("Terjadi kesalahan saat mengambil data"),
+              );
+            }
+
+            if (!snapshot.hasData || snapshot.data?.data == null) {
+              return const Center(child: Text("Data tidak tersedia"));
+            }
+
+            final data = snapshot.data!.data!;
+
+            return ListView(
+              padding: const EdgeInsets.all(20.0),
+              children: [
+                buildStatCard(
+                  "Total Absen",
+                  "${data.totalAbsen}",
+                  Icons.assignment,
+                ),
+                const SizedBox(height: 12),
+                buildStatCard("Total Masuk", "${data.totalMasuk}", Icons.login),
+                const SizedBox(height: 12),
+                buildStatCard(
+                  "Total Izin",
+                  "${data.totalIzin}",
+                  Icons.airline_seat_individual_suite,
+                ),
+                const SizedBox(height: 12),
+                buildStatCard(
+                  "Sudah Absen Hari Ini?",
+                  data.sudahAbsenHariIni == true ? "Ya" : "Belum",
+                  data.sudahAbsenHariIni == true
+                      ? Icons.check_circle
+                      : Icons.cancel,
+                  iconColor:
+                      data.sudahAbsenHariIni == true
+                          ? Colors.green
+                          : Colors.red,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -99,19 +132,22 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: iconColor ?? Color(0xFF1B3C53),
+              backgroundColor: iconColor ?? const Color(0xFF1B3C53),
               child: Icon(icon, color: Colors.white),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1B3C53),

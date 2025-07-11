@@ -18,4 +18,16 @@ class Endpoint {
 
   // Absen
   static const postCheckOut = '$baseUrl/absen/check-out';
+
+  //photo profile
+  static const photoProfile = '$baseUrl/profile/photo';
+
+  //History
+  static const history = '$baseUrl/absen/history';
+
+  //Statistik
+  static const getStatistik = '$baseUrl/absen/stats';
+
+  //Izin
+  static const izin = '$baseUrl/izin';
 }

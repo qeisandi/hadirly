@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_eror.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_photo_pro.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_register.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_update.dart';
@@ -131,6 +133,81 @@ class AuthService {
       return UpdateProfile.fromJson(jsonDecode(response.body));
     } catch (e) {
       throw Exception("Update profile gagal: $e");
+    }
+  }
+
+  Future<PhotoProfile> photoProfile({File? imageFile}) async {
+    try {
+      final token = await SharedPref.getToken();
+      final uri = Uri.parse(Endpoint.photoProfile);
+
+      String? base64Image;
+      String? imageName;
+
+      if (imageFile != null) {
+        final bytes = await imageFile.readAsBytes();
+        base64Image = base64Encode(bytes);
+        imageName = imageFile.path.split("/").last;
+      }
+      final body = {
+        if (base64Image != null && imageName != null) ...{
+          "profile_photo": base64Image,
+          "image_name": imageName,
+        },
+      };
+
+      final response = await http.put(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      print("Upload Photo Profile - Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Gagal update photo profile. Status: ${response.statusCode}. Body: ${response.body}',
+        );
+      }
+
+      final json = jsonDecode(response.body);
+      return PhotoProfile.fromJson(json);
+    } catch (e) {
+      throw Exception("Update photo profile gagal: $e");
+    }
+  }
+
+  Future<PhotoProfile?> getPhotoProfile() async {
+    try {
+      final token = await SharedPref.getToken();
+      final uri = Uri.parse(Endpoint.photoProfile);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      print("Get Photo Profile - Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return PhotoProfile.fromJson(json);
+      } else {
+        print("Gagal mengambil photo profile: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error saat mengambil photo profile: $e");
+      return null;
     }
   }
 }
