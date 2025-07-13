@@ -5,10 +5,12 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_absen.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_history.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_photo_pro.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/check_servis.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/history_servis.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/izin_servis.dart';
 import 'package:hadirly/HadirLy_project/main/riwayat.dart';
 import 'package:http/http.dart' as http;
@@ -28,10 +30,13 @@ class _MainState extends State<Main> {
   PhotoProfile? _photoProfile;
   final CheckServis _checkServis = CheckServis();
   final AuthService _authService = AuthService();
+  final AttendanceService _attendanceService = AttendanceService();
   bool _isLoadingAttendance = true;
-  bool _isLoadingPhoto = false;
+  bool isLoadingPhoto = false;
   final IzinService _izinService = IzinService();
   final TextEditingController _alasanController = TextEditingController();
+  List<History>? _historyData;
+  bool _isLoadingHistory = true;
 
   @override
   void initState() {
@@ -39,6 +44,7 @@ class _MainState extends State<Main> {
     fetchProfile();
     fetchTodayAttendance();
     fetchPhotoProfile();
+    fetchHistoryData();
   }
 
   Future<void> fetchProfile() async {
@@ -69,19 +75,19 @@ class _MainState extends State<Main> {
 
   Future<void> fetchPhotoProfile() async {
     setState(() {
-      _isLoadingPhoto = true;
+      isLoadingPhoto = true;
     });
 
     try {
       final photo = await _authService.getPhotoProfile();
       setState(() {
         _photoProfile = photo;
-        _isLoadingPhoto = false;
+        isLoadingPhoto = false;
       });
     } catch (e) {
       print("Error loading photo profile: $e");
       setState(() {
-        _isLoadingPhoto = false;
+        isLoadingPhoto = false;
       });
     }
   }
@@ -105,6 +111,35 @@ class _MainState extends State<Main> {
     }
   }
 
+  Future<void> fetchHistoryData() async {
+    setState(() {
+      _isLoadingHistory = true;
+    });
+
+    try {
+      final historyResponse = await _attendanceService.fetchHistoryAttendance();
+      if (historyResponse?.data != null) {
+        // Get only the latest 4 records
+        final latestHistory = historyResponse!.data!.take(4).toList();
+        setState(() {
+          _historyData = latestHistory;
+          _isLoadingHistory = false;
+        });
+      } else {
+        setState(() {
+          _historyData = [];
+          _isLoadingHistory = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching history: $e");
+      setState(() {
+        _historyData = [];
+        _isLoadingHistory = false;
+      });
+    }
+  }
+
   String getCheckInTime() {
     if (_isLoadingAttendance) return '-- : -- : --';
     return _todayAttendance?.data?.checkInTime ?? '-- : -- : --';
@@ -117,6 +152,159 @@ class _MainState extends State<Main> {
 
   bool get isCheckedIn => _todayAttendance?.data?.checkInTime != null;
   bool get isCheckedOut => _todayAttendance?.data?.checkOutTime != null;
+  bool get hasSubmittedIzin => _todayAttendance?.data?.status == 'izin';
+
+  Future<void> showIzinDialog() async {
+    // Check if user has already submitted izin today
+    if (hasSubmittedIzin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Anda sudah mengajukan izin hari ini!"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Check if user has already checked in
+    if (isCheckedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Anda sudah melakukan check-in hari ini!"),
+          backgroundColor: Colors.blue,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          "Ajukan Izin",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Silakan tulis alasan izin Anda:",
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 12),
+            TextField(
+              controller: _alasanController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: "Tulis alasan izin...",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Color(0xFF1B3C53)),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _alasanController.clear();
+            },
+            child: Text("Batal", style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final alasan = _alasanController.text.trim();
+              if (alasan.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Alasan tidak boleh kosong!"),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+              
+              Navigator.of(context).pop();
+              
+              // Show loading state
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Text("Mengajukan izin..."),
+                    ],
+                  ),
+                  backgroundColor: Color(0xFF1B3C53),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+
+              try {
+                final result = await _izinService.postIzin(
+                  alasanIzin: alasan,
+                );
+
+                if (!mounted) return;
+
+                if (result != null && result.message != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Izin berhasil diajukan!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  _alasanController.clear();
+                  // Refresh attendance data to show updated status
+                  fetchTodayAttendance();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Gagal mengajukan izin. Silakan coba lagi."),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                print("Error submitting izin: $e");
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Terjadi kesalahan: $e"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF1B3C53),
+            ),
+            child: Text(
+              "Kirim",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> handleCheckOut() async {
     try {
@@ -223,22 +411,16 @@ class _MainState extends State<Main> {
                   SizedBox(height: 10),
                   Text(
                     _profile?.trainingTitle ?? '',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                    style: TextStyle(fontSize: 14, color: Colors.white70),textAlign: TextAlign.justify,
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 24),
-            Text('Distance from place', style: TextStyle(color: Colors.black)),
-            Text(
-              '250.43m',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            
             SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // CHECK IN
                 Column(
                   children: [
                     GestureDetector(
@@ -298,7 +480,6 @@ class _MainState extends State<Main> {
                   ],
                 ),
                 SizedBox(width: 20),
-                // CHECK OUT
                 Column(
                   children: [
                     ElevatedButton(
@@ -392,98 +573,237 @@ class _MainState extends State<Main> {
               ),
             ),
             SizedBox(height: 40),
+            SizedBox(height: 16),
+if (_isLoadingAttendance)
+  CircularProgressIndicator()
+else if (_todayAttendance?.data == null)
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.orange),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Belum ada riwayat kehadiran untuk hari ini. Yuk mulai dengan melakukan check-in!',
+              style: TextStyle(
+                color: Colors.orange.shade800,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  )
+else
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: Colors.green),
+              SizedBox(width: 10),
+              Text(
+                "Hari ini kamu sudah melakukan kehadiran!",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade800,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          Text(
+            "Waktu Check-In: ${getCheckInTime()}",
+            style: TextStyle(color: Colors.black87),
+          ),
+          Text(
+            "Waktu Check-Out: ${getCheckOutTime()}",
+            style: TextStyle(color: Colors.black87),
+          ),
+        ],
+      ),
+    ),
+  ),
+  SizedBox(height: 100,),
+
+            // History Data Section
+            if (!_isLoadingHistory && _historyData != null && _historyData!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Riwayat Terbaru',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF1B3C53),
+                        fontFamily: 'Gilroy',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    ..._historyData!.map((item) {
+                      final date = item.attendanceDate?.toLocal();
+                      final day = _getDayName(date);
+                      final number = date?.day.toString().padLeft(2, '0') ?? "";
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Card(
+                          margin: EdgeInsets.zero,
+                          color: Colors.grey[100],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 60,
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFF1B3C53),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        day,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      Text(
+                                        number,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Container(
+                                  height: 35,
+                                  width: 1,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Check In',
+                                            style: TextStyle(
+                                              color: Color(0xFF1B3C53),
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Text(
+                                            item.checkInTime ?? '-',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Check Out',
+                                            style: TextStyle(
+                                              color: Color(0xFF1B3C53),
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Text(
+                                            item.checkOutTime ?? '-',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder:
-                (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  title: Text(
-                    "Ajukan Izin",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: _alasanController,
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          hintText: "Tulis alasan izin...",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text("Batal", style: TextStyle(color: Colors.red)),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final alasan = _alasanController.text.trim();
-                        if (alasan.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Alasan tidak boleh kosong!"),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                          return;
-                        }
-                        Navigator.of(context).pop();
-                        final result = await _izinService.postIzin(
-                          alasanIzin: alasan,
-                        );
-
-                        if (!mounted) return;
-
-                        if (result != null && result.message != null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Izin berhasil diajukan!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          _alasanController.clear();
-                          fetchTodayAttendance();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Gagal mengajukan izin."),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      },
-
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF1B3C53),
-                      ),
-                      child: Text(
-                        "Kirim",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-          );
-        },
+        onPressed: showIzinDialog,
         label: Text("Ajukan Izin", style: TextStyle(color: Colors.white)),
         icon: Icon(Icons.edit_calendar_rounded, color: Colors.white),
         backgroundColor: Color(0xFF1B3C53),
       ),
     );
+  }
+
+  String _getDayName(DateTime? date) {
+    if (date == null) return '';
+    switch (date.weekday) {
+      case 1:
+        return 'Mon';
+      case 2:
+        return 'Tue';
+      case 3:
+        return 'Wed';
+      case 4:
+        return 'Thu';
+      case 5:
+        return 'Fri';
+      case 6:
+        return 'Sat';
+      case 7:
+        return 'Sun';
+      default:
+        return '';
+    }
   }
 }
