@@ -55,43 +55,65 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1B3C53).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.camera_alt,
+                  color: Color(0xFF1B3C53),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
             'Ubah Foto Profil',
-            style: TextStyle(fontFamily: 'Gilroy'),
+                style: TextStyle(
+                  fontFamily: 'Gilroy',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+            ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Pilih sumber foto:', style: TextStyle(fontSize: 16)),
-              const SizedBox(height: 20),
+              const Text(
+                'Pilih sumber foto:',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Column(
-                    children: [
-                      IconButton(
-                        onPressed: () {
+                  _buildPhotoOption(
+                    icon: Icons.camera_alt,
+                    label: 'Kamera',
+                    color: Colors.blue,
+                    onTap: () {
                           Navigator.pop(context);
                           _pickImage(ImageSource.camera);
                         },
-                        icon: const Icon(Icons.camera_alt, size: 40),
-                        color: Colors.blue,
-                      ),
-                      const Text('Kamera'),
-                    ],
                   ),
-                  Column(
-                    children: [
-                      IconButton(
-                        onPressed: () {
+                  _buildPhotoOption(
+                    icon: Icons.photo_library,
+                    label: 'Galeri',
+                    color: Colors.green,
+                    onTap: () {
                           Navigator.pop(context);
                           _pickImage(ImageSource.gallery);
                         },
-                        icon: const Icon(Icons.photo_library, size: 40),
-                        color: Colors.green,
-                      ),
-                      const Text('Galeri'),
-                    ],
                   ),
                 ],
               ),
@@ -100,11 +122,57 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildPhotoOption({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: color,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -127,6 +195,10 @@ class _ProfilePageState extends State<ProfilePage> {
         SnackBar(
           content: Text("Gagal memilih gambar: $e"),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -147,9 +219,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Foto profil berhasil diperbarui!"),
+          SnackBar(
+            content: const Text("Foto profil berhasil diperbarui!"),
             backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -163,6 +239,10 @@ class _ProfilePageState extends State<ProfilePage> {
           SnackBar(
             content: Text("Gagal memperbarui foto profil: $e"),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -211,26 +291,52 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text(
-              "Konfirmasi",
-              style: TextStyle(fontFamily: 'Inter'),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            const SizedBox(width: 12),
+            const Text(
+              "Keluar",
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            content: const Text("Apakah Anda yakin ingin keluar?"),
+          ],
+        ),
+        content: const Text(
+          "Apakah Anda yakin ingin keluar dari aplikasi?",
+          style: TextStyle(fontSize: 16),
+        ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Tidak"),
+            child: const Text(
+              "Batal",
+              style: TextStyle(
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
               ),
-              TextButton(
+            ),
+          ),
+          ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                   _logoutConfirmed(context);
                 },
-                child: const Text("Iya"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
+            ),
+            child: const Text("Keluar"),
+          ),
+        ],
           ),
     );
   }
@@ -238,8 +344,10 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B3C53),
+        elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(
@@ -247,11 +355,24 @@ class _ProfilePageState extends State<ProfilePage> {
             color: Colors.white,
           ),
         ),
+        title: const Text(
+          'Profil Saya',
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Inter',
+          ),
+        ),
         actions: [
           IconButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Fitur Settings belum tersedia")),
+                SnackBar(
+                  content: const Text("Fitur Settings belum tersedia"),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               );
             },
             icon: const Icon(Icons.settings, color: Colors.white),
@@ -262,25 +383,61 @@ class _ProfilePageState extends State<ProfilePage> {
         future: fetchProfile(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1B3C53)),
+              ),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text("Gagal memuat data profil."));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Gagal memuat data profil",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           final user = snapshot.data!;
 
-          return Column(
+          return SingleChildScrollView(
+            child: Column(
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(bottom: 40),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1B3C53),
-                  borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(80),
-                  ),
+                  padding: const EdgeInsets.only(bottom: 40, top: 20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1B3C53), Color(0xFF2C5A7A)],
+                    ),
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(40),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1B3C53).withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                 ),
                 child: Column(
                   children: [
@@ -288,7 +445,22 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: [
-                          _isLoadingPhoto
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: _isLoadingPhoto
                               ? const CircleAvatar(
                                 radius: 60,
                                 backgroundColor: Colors.grey,
@@ -308,64 +480,124 @@ class _ProfilePageState extends State<ProfilePage> {
                                             )
                                             as ImageProvider,
                               ),
-                          CircleAvatar(
+                            ),
+                            // Edit Photo Button
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
                             radius: 18,
                             backgroundColor: Colors.white,
                             child: IconButton(
-                              icon: Icon(
+                                  icon: const Icon(
                                 Icons.edit,
-                                size: 18,
-                                color: Colors.teal,
+                                    size: 16,
+                                    color: Color(0xFF1B3C53),
                               ),
                               onPressed: _showPhotoDialog,
+                                ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 16),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // User Info Section
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
                     Text(
                       user.name ?? '-',
                       style: const TextStyle(
-                        fontSize: 16,
+                                fontSize: 24,
                         color: Colors.white,
                         fontFamily: 'Gilroy',
                       ),
+                              textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 4),
+                            const SizedBox(height: 8),
                     Text(
                       user.email ?? '-',
                       style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (user.trainingTitle != null) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  user.trainingTitle!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
                         fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    if (user.trainingTitle != null)
-                      Text(
-                        user.trainingTitle!,
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    if (user.batchKe != null)
-                      Text(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (user.batchKe != null) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
                         "Batch ${user.batchKe}",
-                        style: const TextStyle(color: Colors.white70),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-
-                    SizedBox(height: 16),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView(
-                  children:
-                      ListTile.divideTiles(
-                        context: context,
-                        tiles: [
+                
+                const SizedBox(height: 30),
+                
+                // Menu Items Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
                           _buildMenuItem(
                             icon: Icons.person_outline,
                             title: 'Ubah Profil',
-                            iconColor: Colors.deepPurple,
+                        subtitle: 'Edit informasi pribadi',
+                        iconColor: const Color(0xFF1B3C53),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -375,23 +607,39 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
                             },
                           ),
+                      const SizedBox(height: 12),
                           _buildMenuItem(
                             icon: Icons.lock_outline,
                             title: 'Ubah Kata Sandi',
+                        subtitle: 'Ganti password akun',
                             iconColor: Colors.green,
-                            onTap: () {},
-                          ),
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text("Fitur ini belum tersedia"),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
                           _buildMenuItem(
                             icon: Icons.logout,
                             title: 'Keluar',
+                        subtitle: 'Logout dari aplikasi',
                             iconColor: Colors.red,
                             onTap: () => _showLogoutConfirmation(context),
                           ),
                         ],
-                      ).toList(),
+                  ),
                 ),
+                
+                const SizedBox(height: 30),
+              ],
               ),
-            ],
           );
         },
       ),
@@ -401,14 +649,67 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
+    required String subtitle,
     required Color iconColor,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(title, style: const TextStyle(fontFamily: 'Gilroy')),
-      trailing: const Icon(Icons.chevron_right),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 8,
+        ),
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 16,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+          ),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.chevron_right,
+            color: Colors.grey,
+            size: 20,
+          ),
+        ),
       onTap: onTap,
+      ),
     );
   }
 }

@@ -373,7 +373,7 @@ class _MainState extends State<Main> {
           children: [
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 70),
+              padding: EdgeInsets.symmetric(vertical: 70,horizontal: 20),
               decoration: BoxDecoration(
                 color: Color(0xFF1B3C53),
                 borderRadius: BorderRadius.only(
@@ -411,7 +411,7 @@ class _MainState extends State<Main> {
                   SizedBox(height: 10),
                   Text(
                     _profile?.trainingTitle ?? '',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),textAlign: TextAlign.justify,
+                    style: TextStyle(fontSize: 14, color: Colors.white70),textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -572,12 +572,127 @@ class _MainState extends State<Main> {
                 ],
               ),
             ),
-            SizedBox(height: 40),
             SizedBox(height: 16),
 if (_isLoadingAttendance)
   CircularProgressIndicator()
 else if (_todayAttendance?.data == null)
-  Padding(
+  // Check if there's history data to show instead of "belum ada riwayat"
+  (!_isLoadingHistory && _historyData != null && _historyData!.isNotEmpty)
+    ? Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ..._historyData!.map((item) {
+              final date = item.attendanceDate?.toLocal();
+              final day = _getDayName(date);
+              final number = date?.day.toString().padLeft(2, '0') ?? "";
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Card(
+                  margin: EdgeInsets.zero,
+                  color: Colors.grey[100],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF1B3C53),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                day,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Text(
+                                number,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Container(
+                          height: 35,
+                          width: 1,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Check In',
+                                    style: TextStyle(
+                                      color: Color(0xFF1B3C53),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    item.checkInTime ?? '-',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Check Out',
+                                    style: TextStyle(
+                                      color: Color(0xFF1B3C53),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    item.checkOutTime ?? '-',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      )
+    : Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16.0),
     child: Container(
       width: double.infinity,
@@ -644,134 +759,6 @@ else
       ),
     ),
   ),
-  SizedBox(height: 100,),
-
-            // History Data Section
-            if (!_isLoadingHistory && _historyData != null && _historyData!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Riwayat Terbaru',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF1B3C53),
-                        fontFamily: 'Gilroy',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    ..._historyData!.map((item) {
-                      final date = item.attendanceDate?.toLocal();
-                      final day = _getDayName(date);
-                      final number = date?.day.toString().padLeft(2, '0') ?? "";
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Card(
-                          margin: EdgeInsets.zero,
-                          color: Colors.grey[100],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 60,
-                                  padding: EdgeInsets.symmetric(vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF1B3C53),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        day,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      Text(
-                                        number,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Container(
-                                  height: 35,
-                                  width: 1,
-                                  color: Colors.grey.shade400,
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'Check In',
-                                            style: TextStyle(
-                                              color: Color(0xFF1B3C53),
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          Text(
-                                            item.checkInTime ?? '-',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'Check Out',
-                                            style: TextStyle(
-                                              color: Color(0xFF1B3C53),
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          Text(
-                                            item.checkOutTime ?? '-',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                ),
-              ),
 
           ],
         ),

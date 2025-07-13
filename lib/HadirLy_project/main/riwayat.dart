@@ -131,68 +131,123 @@ class _RiwayatState extends State<Riwayat> {
               children: [
                 // Filter Section
                 Container(
-                  padding: EdgeInsets.all(16),
+                  margin: EdgeInsets.all(16),
+                  padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 3,
+                        color: Colors.grey.withOpacity(0.08),
+                        spreadRadius: 0,
+                        blurRadius: 10,
                         offset: Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.filter_list, color: Color(0xFF1B3C53)),
-                      SizedBox(width: 8),
-                      Text(
-                        'Filter Bulan:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF1B3C53),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFF1B3C53)),
-                            borderRadius: BorderRadius.circular(8),
+                      // Simple Header
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_month_rounded,
+                            color: Color(0xFF1B3C53),
+                            size: 24,
                           ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: selectedMonth,
-                              isExpanded: true,
-                              hint: Text('Pilih Bulan'),
-                              items: months.map((month) {
-                                return DropdownMenuItem<String>(
-                                  value: month['value'],
-                                  child: Text(month['label']!),
-                                );
-                              }).toList(),
-                              onChanged: (String? newValue) {
+                          SizedBox(width: 12),
+                          Text(
+                            'Filter Bulan',
+                            style: TextStyle(
+                              color: Color(0xFF1B3C53),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      
+                      // Simple Dropdown
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.grey[200]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: selectedMonth,
+                                  isExpanded: true,
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: Color(0xFF1B3C53),
+                                  ),
+                                  hint: Text(
+                                    'Pilih Bulan',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  items: months.map((month) {
+                                    return DropdownMenuItem<String>(
+                                      value: month['value'],
+                                      child: Text(
+                                        month['label']!,
+                                        style: TextStyle(
+                                          color: Color(0xFF1B3C53),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedMonth = newValue;
+                                      _filterDataByMonth(allData!);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          // Simple Clear Button
+                          if (selectedMonth != null)
+                            GestureDetector(
+                              onTap: () {
                                 setState(() {
-                                  selectedMonth = newValue;
+                                  selectedMonth = null;
                                   _filterDataByMonth(allData!);
                                 });
                               },
+                              child: Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.red[200]!,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.clear_rounded,
+                                  color: Colors.red[600],
+                                  size: 20,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedMonth = null;
-                            _filterDataByMonth(allData!);
-                          });
-                        },
-                        icon: Icon(Icons.clear, color: Colors.red),
-                        tooltip: 'Hapus Filter',
+                        ],
                       ),
                     ],
                   ),
@@ -201,16 +256,30 @@ class _RiwayatState extends State<Riwayat> {
                 // Results Count
                 if (filteredData != null)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey[200]!,
+                        width: 1,
+                      ),
+                    ),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                        SizedBox(width: 4),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: Color(0xFF1B3C53),
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
                         Text(
-                          'Menampilkan ${filteredData!.length} dari ${allData!.length} data kehadiran',
+                          'Menampilkan ${filteredData!.length} dari ${allData!.length} data',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                            fontSize: 13,
+                            color: Color(0xFF1B3C53),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -224,13 +293,28 @@ class _RiwayatState extends State<Riwayat> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.filter_list_off, size: 80, color: Colors.grey[400]),
-                              const SizedBox(height: 20),
+                              Icon(
+                                Icons.event_busy_rounded,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              SizedBox(height: 16),
                               Text(
-                                'Tidak ada data kehadiran untuk bulan yang dipilih',
+                                'Tidak ada data',
                                 style: TextStyle(
                                   fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                   color: Colors.grey[600],
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                selectedMonth != null
+                                    ? 'untuk bulan ${months.firstWhere((m) => m['value'] == selectedMonth)['label']}'
+                                    : 'kehadiran tersedia',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -238,109 +322,109 @@ class _RiwayatState extends State<Riwayat> {
                           ),
                         )
                       : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: filteredData!.length,
-                          itemBuilder: (context, index) {
+              itemBuilder: (context, index) {
                             final item = filteredData![index];
-                            final date = item.attendanceDate?.toLocal();
-                            final day = _getDayName(date);
-                            final number = date?.day.toString().padLeft(2, '0') ?? "";
+                final date = item.attendanceDate?.toLocal();
+                final day = _getDayName(date);
+                final number = date?.day.toString().padLeft(2, '0') ?? "";
 
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Card(
-                                margin: EdgeInsets.symmetric(vertical: 6),
-                                color: Colors.grey[200],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(10),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 70,
-                                        padding: EdgeInsets.symmetric(vertical: 12),
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFF1B3C53),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              day,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              number,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Container(
-                                        height: 40,
-                                        width: 1,
-                                        color: Colors.grey.shade400,
-                                      ),
-                                      SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  'Check In',
-                                                  style: TextStyle(
-                                                    color: Color(0xFF1B3C53),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                Spacer(),
-                                                Text(
-                                                  item.checkInTime ?? '-',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  'Check Out',
-                                                  style: TextStyle(
-                                                    color: Color(0xFF1B3C53),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                Spacer(),
-                                                Text(
-                                                  item.checkOutTime ?? '-',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Card(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    color: Colors.grey[200],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 70,
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF1B3C53),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  day,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                                Text(
+                                  number,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Container(
+                            height: 40,
+                            width: 1,
+                            color: Colors.grey.shade400,
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Check In',
+                                      style: TextStyle(
+                                        color: Color(0xFF1B3C53),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Spacer(),
+                                    Text(
+                                      item.checkInTime ?? '-',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Check Out',
+                                      style: TextStyle(
+                                        color: Color(0xFF1B3C53),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Spacer(),
+                                    Text(
+                                      item.checkOutTime ?? '-',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
                         ),
                 ),
               ],

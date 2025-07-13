@@ -33,6 +33,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
           SnackBar(
             content: Text(result.message ?? 'Profil berhasil diperbarui!'),
             backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -42,6 +46,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         SnackBar(
           content: Text("Gagal memperbarui profil: $e"),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } finally {
@@ -66,35 +74,89 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B3C53),
+        elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
         ),
-        title: Text("Ubah Profil", style: TextStyle(fontFamily: 'Inter')),
-        backgroundColor: const Color(0xFF1B3C53),
-        iconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 18),
+        title: const Text(
+          "Ubah Profil",
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
           child: Column(
             children: [
-              SizedBox(height: 8),
-              Row(
+            // Header Section
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1B3C53), Color(0xFF2C5A7A)],
+                ),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(30),
+                ),
+              ),
+              child: Column(
                 children: [
-                  Icon(Icons.edit_outlined, color: Color(0xFF1B3C53)),
-                  SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.edit_note,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Perbarui Informasi Profil",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     "Silakan perbarui data profil Anda",
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 18),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
-              SizedBox(height: 24),
+            ),
 
+            // Form Section
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
               _buildInputField(
                 controller: _nameController,
                 label: 'Nama Lengkap',
@@ -102,7 +164,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                 validatorMessage: 'Nama tidak boleh kosong',
               ),
 
-              SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _emailController,
@@ -110,7 +172,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                 icon: Icons.email_outlined,
               ),
 
-              SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _phoneController,
@@ -119,51 +181,135 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                 keyboardType: TextInputType.phone,
               ),
 
-              SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _addressController,
                 label: 'Alamat',
                 icon: Icons.home_outlined,
-                maxLines: 2,
-              ),
+                      maxLines: 3,
+                    ),
 
-              SizedBox(height: 32),
+                    const SizedBox(height: 40),
 
+                    // Save Button
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1B3C53), Color(0xFF2C5A7A)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1B3C53).withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: _isLoading ? null : _submit,
+                          child: Center(
+                            child: _isLoading
+                                ? const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
               SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _submit,
-                  icon:
-                      _isLoading
-                          ? SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2,
                             ),
-                          )
-                          : Icon(Icons.save_alt_outlined, color: Colors.white),
-                  label: Text(
-                    _isLoading ? "Menyimpan..." : "Simpan Perubahan",
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        "Menyimpan...",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          fontFamily: 'Inter',
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.save_alt_outlined,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        "Simpan Perubahan",
                     style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
                       fontFamily: 'Inter',
-                      fontSize: 16,
-                      color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B3C53),
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Info Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.blue.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              "Hanya nama yang dapat diperbarui saat ini",
+                              style: TextStyle(
+                                color: Colors.blue[700],
+                                fontSize: 14,
+                                fontFamily: 'Inter',
                   ),
                 ),
               ),
             ],
           ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -177,26 +323,86 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
   }) {
-    return TextFormField(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
+        style: const TextStyle(
+          fontSize: 16,
+          fontFamily: 'Inter',
+        ),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
+          labelStyle: TextStyle(
+            color: Colors.grey[600],
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B3C53).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF1B3C53),
+              size: 20,
+            ),
+          ),
         filled: true,
-        fillColor: Color(0xFFEEF3F6),
+          fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: Color(0xFF1B3C53),
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: Colors.red,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: Colors.red,
+              width: 2,
+            ),
+          ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 18,
         ),
       ),
-      validator:
-          validatorMessage != null
+        validator: validatorMessage != null
               ? (value) {
                 if (value == null || value.trim().isEmpty) {
                   return validatorMessage;
@@ -204,6 +410,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                 return null;
               }
               : null,
+      ),
     );
   }
 }
