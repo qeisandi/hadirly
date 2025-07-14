@@ -58,4 +58,32 @@ class AttendanceService {
       return null;
     }
   }
+
+  Future<bool> deleteHistoryAttendance(int historyId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.delete(
+        Uri.parse('${Endpoint.deleteHistory}/$historyId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      print("Delete History - Status Code: ${response.statusCode}");
+      print("Delete History - Response Body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      } else {
+        print("Gagal menghapus history: ${response.statusCode}");
+        return false;
+      }
+    } catch (e) {
+      print("Error saat menghapus history: $e");
+      return false;
+    }
+  }
 }

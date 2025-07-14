@@ -9,13 +9,18 @@ class IzinService {
   Future<Perizinan?> postIzin({required String alasanIzin}) async {
     try {
       final token = await SharedPref.getToken();
-      
+
       if (token == null) {
         print("Token tidak ditemukan");
         return null;
       }
 
+      final tanggalHariIni = DateTime.now().toIso8601String().substring(
+        0,
+        10,
+      ); // yyyy-MM-dd
       print("Mengirim izin dengan alasan: $alasanIzin");
+      print("Tanggal izin: $tanggalHariIni");
       print("Endpoint: ${Endpoint.izin}");
 
       final response = await http.post(
@@ -25,7 +30,7 @@ class IzinService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-        body: jsonEncode({"alasan_izin": alasanIzin}),
+        body: jsonEncode({"alasan_izin": alasanIzin, "date": tanggalHariIni}),
       );
 
       print("Response Status Code: ${response.statusCode}");
@@ -42,7 +47,6 @@ class IzinService {
         }
       } else {
         print("Gagal mengirim izin: ${response.statusCode}");
-        print("Response Body: ${response.body}");
         return null;
       }
     } catch (e) {

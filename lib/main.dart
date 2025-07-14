@@ -1,15 +1,12 @@
-import 'dart:io'; 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hadirly/HadirLy_project/bottomNav/bottom_nav.dart';
+import 'package:hadirly/HadirLy_project/helper/sharedpref/pref_api.dart';
 import 'package:hadirly/HadirLy_project/login_regis/login.dart';
-import 'package:hadirly/HadirLy_project/login_regis/regis.dart';
-import 'package:hadirly/HadirLy_project/main/dashboard.dart';
-import 'package:hadirly/HadirLy_project/main/profile.dart';
-import 'package:hadirly/HadirLy_project/main/riwayat.dart';
-import 'package:hadirly/HadirLy_project/splas/splash.dart';
 
 void main() {
-  HttpOverrides.global = MyHttpOverrides(); 
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 
@@ -29,20 +26,44 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'HadirLy',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => SplashScreen(),
-        Login.id: (context) => Login(),
-        Regis.id: (context) => Regis(),
-        Main.id: (context) => Main(),
-        ProfilePage.id: (context) => ProfilePage(),
-        Riwayat.id: (context) => Riwayat(),
-        BottomNavScreen.id: (context) => BottomNavScreen(),
-      },
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-      ),
+      title: 'Hadirly',
+      home: SplashScreen(),
     );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkToken();
+  }
+
+  Future<void> _checkToken() async {
+    final token = await SharedPref.getToken();
+    await Future.delayed(const Duration(seconds: 1)); // animasi splash opsional
+    if (token != null && token.isNotEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const BottomNavScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Login()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

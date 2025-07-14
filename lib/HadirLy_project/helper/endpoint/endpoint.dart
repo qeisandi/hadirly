@@ -24,10 +24,12 @@ class Endpoint {
 
   //History
   static const history = '$baseUrl/absen/history';
+  static const deleteHistory = '$baseUrl/absen';
 
   //Statistik
   static const getStatistik = '$baseUrl/absen/stats';
 
   //Izin
   static const izin = '$baseUrl/izin';
+  static const baseUrlImage = 'https://appabsensi.mobileprojp.com/public/';
 }

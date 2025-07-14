@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
-import 'package:hadirly/HadirLy_project/helper/model/model_photo_pro.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
-import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
+import 'package:hadirly/HadirLy_project/helper/model/model_profile_photo.dart';
+import 'package:hadirly/HadirLy_project/helper/servis/profile_photo_servis.dart';
 import 'package:hadirly/HadirLy_project/main/update.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -21,29 +21,42 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final AuthService _authService = AuthService();
-  PhotoProfile? _photoProfile;
+  final ProfilePhotoService _profilePhotoService = ProfilePhotoService();
+  ProfilePhotoData? _profileData;
   bool _isLoadingPhoto = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPhotoProfile();
+    _loadProfileData();
   }
 
-  Future<void> _loadPhotoProfile() async {
+  Future<void> _loadProfileData() async {
+    if (!mounted) return;
     setState(() {
       _isLoadingPhoto = true;
     });
-
     try {
-      final photo = await _authService.getPhotoProfile();
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token == null) {
+        if (!mounted) return;
+        setState(() {
+          _isLoadingPhoto = false;
+        });
+        return;
+      }
+      final response = await _profilePhotoService.fetchProfilePhoto(
+        token: token,
+      );
+      if (!mounted) return;
       setState(() {
-        _photoProfile = photo;
+        _profileData = response?.data;
         _isLoadingPhoto = false;
       });
     } catch (e) {
-      print("Error loading photo profile: $e");
+      print("Error loading profile data: $e");
+      if (!mounted) return;
       setState(() {
         _isLoadingPhoto = false;
       });
@@ -74,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(width: 12),
               const Text(
-            'Ubah Foto Profil',
+                'Ubah Foto Profil',
                 style: TextStyle(
                   fontFamily: 'Gilroy',
                   fontWeight: FontWeight.w600,
@@ -88,10 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               const Text(
                 'Pilih sumber foto:',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 24),
               Row(
@@ -102,18 +112,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     label: 'Kamera',
                     color: Colors.blue,
                     onTap: () {
-                          Navigator.pop(context);
-                          _pickImage(ImageSource.camera);
-                        },
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.camera);
+                    },
                   ),
                   _buildPhotoOption(
                     icon: Icons.photo_library,
                     label: 'Galeri',
                     color: Colors.green,
                     onTap: () {
-                          Navigator.pop(context);
-                          _pickImage(ImageSource.gallery);
-                        },
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.gallery);
+                    },
                   ),
                 ],
               ),
@@ -149,18 +159,11 @@ class _ProfilePageState extends State<ProfilePage> {
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: color.withOpacity(0.3), width: 1),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: color,
-            ),
+            Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),
             Text(
               label,
@@ -210,30 +213,47 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      final result = await _authService.photoProfile(imageFile: imageFile);
-
-      setState(() {
-        _photoProfile = result;
-        _isLoadingPhoto = false;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("Foto profil berhasil diperbarui!"),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+      final result = await _profilePhotoService.photoProfile(
+        imageFile: imageFile,
+      );
+      if (result != null && result.profilePhoto != null) {
+        setState(() {
+          _profileData?.profilePhoto = result.profilePhoto;
+          _isLoadingPhoto = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Foto profil berhasil diperbarui!"),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-          ),
-        );
+          );
+        }
+      } else {
+        setState(() {
+          _isLoadingPhoto = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Gagal memperbarui foto profil"),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       setState(() {
         _isLoadingPhoto = false;
       });
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -291,54 +311,74 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Row(
-          children: [
-            const SizedBox(width: 12),
-            const Text(
-              "Keluar",
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w600,
-              ),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-          ],
-        ),
-        content: const Text(
-          "Apakah Anda yakin ingin keluar dari aplikasi?",
-          style: TextStyle(fontSize: 16),
-        ),
+            title: Row(
+              children: [
+                const SizedBox(width: 12),
+                const Text(
+                  "Keluar",
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            content: const Text(
+              "Apakah Anda yakin ingin keluar dari aplikasi?",
+              style: TextStyle(fontSize: 16),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Batal",
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
+                child: const Text(
+                  "Batal",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ElevatedButton(
+              ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                   _logoutConfirmed(context);
                 },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text("Keluar"),
               ),
-            ),
-            child: const Text("Keluar"),
-          ),
-        ],
+            ],
           ),
     );
+  }
+
+  ImageProvider getProfileImage() {
+    final url = _profileData?.profilePhoto;
+    if (url != null && url.isNotEmpty) {
+      if (url.startsWith('data:image')) {
+        // base64 with prefix
+        return MemoryImage(base64Decode(url.split(',').last));
+      } else if (url.length > 100) {
+        // base64 without prefix
+        return MemoryImage(base64Decode(url));
+      } else if (url.startsWith('http')) {
+        return NetworkImage(url);
+      } else {
+        // path only
+        return NetworkImage('https://appabsensi.mobileprojp.com/public/$url');
+      }
+    }
+    return const AssetImage('assets/image/profile.png');
   }
 
   @override
@@ -357,10 +397,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         title: const Text(
           'Profil Saya',
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Inter',
-          ),
+          style: TextStyle(color: Colors.white, fontFamily: 'Inter'),
         ),
         actions: [
           IconButton(
@@ -379,225 +416,210 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      body: FutureBuilder<Profile?>(
-        future: fetchProfile(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1B3C53)),
-              ),
-            );
-          }
-
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Gagal memuat data profil",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final user = snapshot.data!;
-
-          return SingleChildScrollView(
-            child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                  padding: const EdgeInsets.only(bottom: 40, top: 20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1B3C53), Color(0xFF2C5A7A)],
-                    ),
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(40),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF1B3C53).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+      body:
+          _isLoadingPhoto
+              ? const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1B3C53)),
                 ),
+              )
+              : _profileData == null
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Gagal memuat data profil",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              : SingleChildScrollView(
                 child: Column(
                   children: [
-                    Center(
-                      child: Stack(
-                        alignment: Alignment.bottomRight,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(bottom: 40, top: 20),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF1B3C53), Color(0xFF2C5A7A)],
+                        ),
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(40),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1B3C53).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
                         children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 4,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
+                          Center(
+                            child: Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 4,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              child: _isLoadingPhoto
-                              ? const CircleAvatar(
-                                radius: 60,
-                                backgroundColor: Colors.grey,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  child:
+                                      _isLoadingPhoto
+                                          ? const CircleAvatar(
+                                            radius: 60,
+                                            backgroundColor: Colors.grey,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                          : CircleAvatar(
+                                            radius: 60,
+                                            backgroundImage: getProfileImage(),
+                                          ),
                                 ),
-                              )
-                              : CircleAvatar(
-                                radius: 60,
-                                backgroundImage:
-                                    _photoProfile?.data?.profilePhoto != null
-                                        ? NetworkImage(
-                                          _photoProfile!.data!.profilePhoto!,
-                                        )
-                                        : const AssetImage(
-                                              'assets/image/profile.png',
-                                            )
-                                            as ImageProvider,
-                              ),
+                                // Edit Photo Button
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: Colors.white,
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        size: 16,
+                                        color: Color(0xFF1B3C53),
+                                      ),
+                                      onPressed: _showPhotoDialog,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            // Edit Photo Button
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // User Info Section
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _profileData?.name ?? '-',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    color: Colors.white,
+                                    fontFamily: 'Gilroy',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _profileData?.email ?? '-',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                if (_profileData?.trainingTitle != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      _profileData!.trainingTitle!,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
                                 ],
-                              ),
-                              child: CircleAvatar(
-                            radius: 18,
-                            backgroundColor: Colors.white,
-                            child: IconButton(
-                                  icon: const Icon(
-                                Icons.edit,
-                                    size: 16,
-                                    color: Color(0xFF1B3C53),
-                              ),
-                              onPressed: _showPhotoDialog,
-                                ),
+                                if (_profileData?.batchKe != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "Batch ${_profileData!.batchKe}",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                      
-                      const SizedBox(height: 20),
-                      
-                      // User Info Section
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: [
-                    Text(
-                      user.name ?? '-',
-                      style: const TextStyle(
-                                fontSize: 24,
-                        color: Colors.white,
-                        fontFamily: 'Gilroy',
-                      ),
-                              textAlign: TextAlign.center,
-                    ),
-                            const SizedBox(height: 8),
-                    Text(
-                      user.email ?? '-',
-                      style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            if (user.trainingTitle != null) ...[
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  user.trainingTitle!,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                        fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                            if (user.batchKe != null) ...[
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                        "Batch ${user.batchKe}",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-                
-                const SizedBox(height: 30),
-                
-                // Menu Items Section
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
+
+                    const SizedBox(height: 30),
+
+                    // Menu Items Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
                           _buildMenuItem(
                             icon: Icons.person_outline,
                             title: 'Ubah Profil',
-                        subtitle: 'Edit informasi pribadi',
-                        iconColor: const Color(0xFF1B3C53),
+                            subtitle: 'Edit informasi pribadi',
+                            iconColor: const Color(0xFF1B3C53),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -607,42 +629,42 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
                             },
                           ),
-                      const SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           _buildMenuItem(
                             icon: Icons.lock_outline,
                             title: 'Ubah Kata Sandi',
-                        subtitle: 'Ganti password akun',
+                            subtitle: 'Ganti password akun',
                             iconColor: Colors.green,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text("Fitur ini belum tersedia"),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    "Fitur ini belum tersedia",
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
                           _buildMenuItem(
                             icon: Icons.logout,
                             title: 'Keluar',
-                        subtitle: 'Logout dari aplikasi',
+                            subtitle: 'Logout dari aplikasi',
                             iconColor: Colors.red,
                             onTap: () => _showLogoutConfirmation(context),
                           ),
                         ],
-                  ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+                  ],
                 ),
-                
-                const SizedBox(height: 30),
-              ],
               ),
-          );
-        },
-      ),
     );
   }
 
@@ -666,35 +688,22 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: iconColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
+          child: Icon(icon, color: iconColor, size: 24),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontFamily: 'Inter', fontSize: 16),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
         ),
         trailing: Container(
           padding: const EdgeInsets.all(8),
@@ -702,13 +711,9 @@ class _ProfilePageState extends State<ProfilePage> {
             color: Colors.grey.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-            size: 20,
-          ),
+          child: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
         ),
-      onTap: onTap,
+        onTap: onTap,
       ),
     );
   }
