@@ -77,8 +77,13 @@ class AuthService {
         return registerFromJson(response.body).toJson();
       } else if (response.statusCode == 422) {
         return errorParamsFromJson(response.body).toJson();
+      } else if (response.statusCode == 404) {
+        return {
+          "errors": true,
+          "message": "email tidak terdaftar atau password salah",
+        };
       } else {
-        print("Maaf Tidak Bisa Login User: ${response.statusCode}");
+        print("Maaf Tidak Bisa Login User:  [33m${response.statusCode} [0m");
         throw Exception("Gagal Untuk login User: ${response.statusCode}");
       }
     } catch (e) {

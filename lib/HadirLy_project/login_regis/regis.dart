@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/snackbar_util.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_batch.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_training.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
@@ -69,8 +70,10 @@ class _RegisState extends State<Regis> {
 
   void _registerUser() async {
     if (_selectedGender == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Pilih jenis kelamin terlebih dahulu")),
+      showCustomSnackbar(
+        context,
+        "Pilih jenis kelamin terlebih dahulu",
+        type: SnackbarType.warning,
       );
       return;
     }
@@ -90,19 +93,17 @@ class _RegisState extends State<Regis> {
       setState(() => _isLoading = false);
 
       if (result != null && result.data?.token != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green,
-            content: Text("Registrasi berhasil!"),
-          ),
+        showCustomSnackbar(
+          context,
+          "Registrasi berhasil!",
+          type: SnackbarType.success,
         );
         Navigator.pop(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.red,
-            content: Text("Registrasi gagal. Coba lagi."),
-          ),
+        showCustomSnackbar(
+          context,
+          "Registrasi gagal. Coba lagi.",
+          type: SnackbarType.error,
         );
       }
     }

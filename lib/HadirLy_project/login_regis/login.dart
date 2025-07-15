@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hadirly/HadirLy_project/bottomNav/bottom_nav.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/snackbar_util.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/auth_servis.dart';
 import 'package:hadirly/HadirLy_project/helper/sharedpref/pref_api.dart';
 import 'package:hadirly/HadirLy_project/login_regis/regis.dart';
@@ -27,27 +28,26 @@ class _LoginState extends State<Login> {
     });
 
     final res = await AuthService().loginUser(
-      email: _emailController.text,
-      password: _passwordController.text,
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
     );
+
     print("Respon dari API: $res");
+
     if (res["data"] != null) {
       final token = res['data']['token'];
       await SharedPref.saveToken(token);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Berhasil Registrasi!'),
-          backgroundColor: Colors.green,
-        ),
+
+      showCustomSnackbar(
+        context,
+        'Anda Berhasil Login!',
+        type: SnackbarType.success,
       );
+
       Navigator.pushNamed(context, BottomNavScreen.id);
-    } else if (res["errors"] != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Maaf, ${res["message"]}"),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } else {
+      final message = res["message"] ?? "Terjadi kesalahan saat login.";
+      showCustomSnackbar(context, "Maaf, $message", type: SnackbarType.error);
     }
 
     setState(() {

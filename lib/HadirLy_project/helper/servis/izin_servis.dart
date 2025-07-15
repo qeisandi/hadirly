@@ -6,7 +6,10 @@ import 'package:hadirly/HadirLy_project/helper/sharedpref/pref_api.dart';
 import 'package:http/http.dart' as http;
 
 class IzinService {
-  Future<Perizinan?> postIzin({required String alasanIzin}) async {
+  Future<Perizinan?> postIzin({
+    required String alasanIzin,
+    DateTime? tanggalIzin,
+  }) async {
     try {
       final token = await SharedPref.getToken();
 
@@ -15,12 +18,11 @@ class IzinService {
         return null;
       }
 
-      final tanggalHariIni = DateTime.now().toIso8601String().substring(
-        0,
-        10,
-      ); // yyyy-MM-dd
+      final tanggal = (tanggalIzin ?? DateTime.now());
+      final tanggalStr =
+          "${tanggal.year.toString().padLeft(4, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.day.toString().padLeft(2, '0')}";
       print("Mengirim izin dengan alasan: $alasanIzin");
-      print("Tanggal izin: $tanggalHariIni");
+      print("Tanggal izin: $tanggalStr");
       print("Endpoint: ${Endpoint.izin}");
 
       final response = await http.post(
@@ -30,7 +32,7 @@ class IzinService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-        body: jsonEncode({"alasan_izin": alasanIzin, "date": tanggalHariIni}),
+        body: jsonEncode({"alasan_izin": alasanIzin, "date": tanggalStr}),
       );
 
       print("Response Status Code: ${response.statusCode}");

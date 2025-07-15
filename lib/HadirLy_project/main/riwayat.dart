@@ -131,7 +131,6 @@ class _RiwayatState extends State<Riwayat> {
 
             return Column(
               children: [
-                // Filter Section
                 Container(
                   margin: EdgeInsets.all(16),
                   padding: EdgeInsets.all(20),
@@ -150,7 +149,6 @@ class _RiwayatState extends State<Riwayat> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Simple Header
                       Row(
                         children: [
                           Icon(
@@ -170,8 +168,6 @@ class _RiwayatState extends State<Riwayat> {
                         ],
                       ),
                       SizedBox(height: 16),
-
-                      // Simple Dropdown
                       Row(
                         children: [
                           Expanded(
@@ -227,7 +223,6 @@ class _RiwayatState extends State<Riwayat> {
                             ),
                           ),
                           SizedBox(width: 12),
-                          // Simple Clear Button
                           if (selectedMonth != null)
                             GestureDetector(
                               onTap: () {
@@ -258,8 +253,6 @@ class _RiwayatState extends State<Riwayat> {
                     ],
                   ),
                 ),
-
-                // Results Count
                 if (filteredData != null)
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -288,8 +281,6 @@ class _RiwayatState extends State<Riwayat> {
                       ],
                     ),
                   ),
-
-                // List View
                 Expanded(
                   child:
                       filteredData == null || filteredData!.isEmpty
@@ -337,235 +328,193 @@ class _RiwayatState extends State<Riwayat> {
 
                               final isIzin = item.status == 'izin';
 
-                              return Dismissible(
-                                key: Key(item.id.toString()),
-                                direction: DismissDirection.endToStart,
-                                confirmDismiss: (direction) async {
-                                  await _showDeleteConfirmation(item);
-                                  return false; // Don't auto-dismiss, let the dialog handle it
-                                },
-                                background: Container(
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: 10.0,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red[600],
+                              return Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                child: Card(
+                                  margin: EdgeInsets.symmetric(vertical: 6),
+                                  color:
+                                      isIzin
+                                          ? Colors.orange[50]
+                                          : Colors.grey[100],
+                                  shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  alignment: Alignment.centerRight,
-                                  padding: EdgeInsets.only(right: 20),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Icon(
-                                        Icons.delete_forever,
-                                        color: Colors.white,
-                                        size: 28,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Hapus',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 70,
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 12,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                isIzin
+                                                    ? Colors.orange
+                                                    : Color(0xFF1B3C53),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                day,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                number,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0,
-                                  ),
-                                  child: Card(
-                                    margin: EdgeInsets.symmetric(vertical: 6),
-                                    color:
-                                        isIzin
-                                            ? Colors.orange[50]
-                                            : Colors.grey[200],
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsets.all(10),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 70,
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 12,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  isIzin
-                                                      ? Colors.orange
-                                                      : Color(0xFF1B3C53),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  day,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
+                                        SizedBox(width: 12),
+                                        Container(
+                                          height: 40,
+                                          width: 1,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                        SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    isIzin
+                                                        ? 'Izin'
+                                                        : 'Check In',
+                                                    style: TextStyle(
+                                                      color:
+                                                          isIzin
+                                                              ? Colors.orange
+                                                              : Color(
+                                                                0xFF1B3C53,
+                                                              ),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
                                                   ),
-                                                ),
-                                                Text(
-                                                  number,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Container(
-                                            height: 40,
-                                            width: 1,
-                                            color: Colors.grey.shade400,
-                                          ),
-                                          SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      isIzin
-                                                          ? 'Izin'
-                                                          : 'Check In',
-                                                      style: TextStyle(
-                                                        color:
-                                                            isIzin
-                                                                ? Colors.orange
-                                                                : Color(
-                                                                  0xFF1B3C53,
-                                                                ),
-                                                        fontWeight:
-                                                            FontWeight.w500,
+                                                  if (isIzin)
+                                                    Container(
+                                                      margin: EdgeInsets.only(
+                                                        left: 8,
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 2,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.orange,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      child: Text(
+                                                        'IZIN',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 10,
+                                                        ),
                                                       ),
                                                     ),
-                                                    if (isIzin)
-                                                      Container(
-                                                        margin: EdgeInsets.only(
-                                                          left: 8,
-                                                        ),
-                                                        padding:
-                                                            EdgeInsets.symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 2,
-                                                            ),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.orange,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                8,
+                                                  Spacer(),
+                                                  Text(
+                                                    isIzin
+                                                        ? '-'
+                                                        : (item.checkInTime ??
+                                                            '-'),
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    isIzin
+                                                        ? 'Alasan'
+                                                        : 'Check Out',
+                                                    style: TextStyle(
+                                                      color:
+                                                          isIzin
+                                                              ? Colors.orange
+                                                              : Color(
+                                                                0xFF1B3C53,
                                                               ),
-                                                        ),
-                                                        child: Text(
-                                                          'IZIN',
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 10,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    Spacer(),
-                                                    Text(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  Flexible(
+                                                    child: Text(
                                                       isIzin
-                                                          ? '-'
-                                                          : (item.checkInTime ??
+                                                          ? (item.alasanIzin
+                                                                  ?.toString() ??
+                                                              '-')
+                                                          : (item.checkOutTime ??
                                                               '-'),
                                                       style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(height: 8),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      isIzin
-                                                          ? 'Alasan'
-                                                          : 'Check Out',
-                                                      style: TextStyle(
                                                         color:
                                                             isIzin
-                                                                ? Colors.orange
-                                                                : Color(
-                                                                  0xFF1B3C53,
-                                                                ),
-                                                        fontWeight:
-                                                            FontWeight.w500,
+                                                                ? Colors
+                                                                    .orange[800]
+                                                                : null,
                                                       ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
-                                                    Spacer(),
-                                                    Flexible(
-                                                      child: Text(
-                                                        isIzin
-                                                            ? (item.alasanIzin
-                                                                    ?.toString() ??
-                                                                '-')
-                                                            : (item.checkOutTime ??
-                                                                '-'),
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color:
-                                                              isIzin
-                                                                  ? Colors
-                                                                      .orange[800]
-                                                                  : null,
-                                                        ),
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(width: 8),
-                                          // Delete Button
-                                          GestureDetector(
-                                            onTap:
-                                                () => _showDeleteConfirmation(
-                                                  item,
-                                                ),
-                                            child: Container(
-                                              padding: EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.red[50],
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                border: Border.all(
-                                                  color: Colors.red[200]!,
-                                                  width: 1,
-                                                ),
+                                                  ),
+                                                ],
                                               ),
-                                              child: Icon(
-                                                Icons.delete_outline_rounded,
-                                                color: Colors.red[600],
-                                                size: 20,
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        // Delete Button
+                                        GestureDetector(
+                                          onTap:
+                                              () =>
+                                                  _showDeleteConfirmation(item),
+                                          child: Container(
+                                            padding: EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red[50],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: Colors.red[200]!,
+                                                width: 1,
                                               ),
                                             ),
+                                            child: Icon(
+                                              Icons.delete_outline_rounded,
+                                              color: Colors.red[600],
+                                              size: 20,
+                                            ),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),

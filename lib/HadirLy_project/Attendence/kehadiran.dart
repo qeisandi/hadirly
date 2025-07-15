@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/snackbar_util.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_cekin.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/check_servis.dart';
 import 'package:hadirly/HadirLy_project/helper/sharedpref/pref_api.dart';
@@ -99,12 +100,10 @@ class _CheckInState extends State<CheckIn> {
   Future<void> _handleCheckIn() async {
     if (_currentPosition == null ||
         _currentAddress == "Gagal mendapatkan lokasi") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Gagal mendapatkan lokasi. Silakan refresh lokasi terlebih dahulu.",
-          ),
-        ),
+      showCustomSnackbar(
+        context,
+        "Gagal mendapatkan lokasi. Silakan refresh lokasi terlebih dahulu.",
+        type: SnackbarType.error,
       );
       return;
     }
@@ -114,10 +113,10 @@ class _CheckInState extends State<CheckIn> {
     final token = await SharedPref.getToken();
 
     if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Token tidak ditemukan. Harap login ulang."),
-        ),
+      showCustomSnackbar(
+        context,
+        "Token tidak ditemukan. Harap login ulang.",
+        type: SnackbarType.error,
       );
       return;
     }
@@ -134,8 +133,6 @@ class _CheckInState extends State<CheckIn> {
     );
 
     final success = await checkServis.postCheckIn(data);
-
-    // Check if widget is still mounted before calling setState
     if (!mounted) return;
 
     if (success) {
@@ -143,21 +140,16 @@ class _CheckInState extends State<CheckIn> {
         checkInTime = formattedTime;
         status = "Sudah Check In";
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Berhasil Check In"),
-          backgroundColor: Colors.green,
-        ),
+      showCustomSnackbar(
+        context,
+        "Berhasil Check In",
+        type: SnackbarType.success,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Gagal Check In. Silakan coba lagi atau hubungi admin.",
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 4),
-        ),
+      showCustomSnackbar(
+        context,
+        "Gagal Check In. Silakan coba lagi atau hubungi admin.",
+        type: SnackbarType.error,
       );
     }
   }
@@ -175,265 +167,497 @@ class _CheckInState extends State<CheckIn> {
     final dayFormatted = DateFormat("EEEE").format(now);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Container(),
-        titleSpacing: 0,
-        backgroundColor: const Color(0xFF1B3C53),
-        title: const Text(
-          'Kehadiran',
-          style: TextStyle(color: Colors.white, fontFamily: 'Inter'),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Fitur Settings belum tersedia"),
-                  backgroundColor: Colors.green,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            leading: Container(),
+            expandedHeight: 100,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF1B3C53),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF1B3C53),
+                      Color(0xFF456882),
+                      Color(0xFF6B8BA3),
+                    ],
+                  ),
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-      body:
-          _isLoadingLocation
-              ? Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Stack(
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: SizedBox(
-                              height: 300,
-                              width: double.infinity,
-                              child: GoogleMap(
-                                initialCameraPosition: CameraPosition(
-                                  target:
-                                      _currentPosition ??
-                                      LatLng(-6.2, 106.816666),
-                                  zoom: 14,
-                                ),
-                                onMapCreated: (controller) {
-                                  mapController = controller;
-                                },
-                                markers: _marker != null ? {_marker!} : {},
-                                myLocationButtonEnabled: true,
-                                myLocationEnabled: true,
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(
+                                Icons.fingerprint,
+                                color: Colors.white,
+                                size: 28,
                               ),
                             ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 20,
-                          left: 20,
-                          right: 20,
-                          child: Card(
-                            color: Colors.white,
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: const [
-                                      Text(
-                                        "Distance from place",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        "250.43m",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
+                                  const Text(
+                                    'Kehadiran',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Inter',
+                                    ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      _currentAddress,
-                                      style: const TextStyle(fontSize: 11),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
+                                  Text(
+                                    '$dayFormatted, $dateFormatted',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.account_circle,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ProfilePage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        Positioned(
-                          bottom: 20,
-                          left: 30,
-                          child: FloatingActionButton(
-                            backgroundColor: Colors.white,
-                            onPressed: _getCurrentLocation,
-                            tooltip: "Refresh Lokasi",
-                            child: const Icon(
-                              Icons.location_searching_rounded,
-                              color: Colors.blue,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // Status Card
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.white, Color(0xFFF8FAFC)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildStatusItem(
+                              icon: Icons.login,
+                              label: 'Check In',
+                              value: checkInTime,
+                              color: const Color(0xFF1B3C53),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 50,
+                              color: Colors.grey.withOpacity(0.3),
+                            ),
+                            _buildStatusItem(
+                              icon: Icons.logout,
+                              label: 'Check Out',
+                              value: checkOutTime,
+                              color: const Color(0xFF1B3C53),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 50,
+                              color: Colors.grey.withOpacity(0.3),
+                            ),
+                            _buildStatusItem(
+                              icon:
+                                  status == "Sudah Check In"
+                                      ? Icons.check_circle
+                                      : Icons.access_time,
+                              label: 'Status',
+                              value: status,
+                              color:
+                                  status == "Sudah Check In"
+                                      ? Colors.green
+                                      : Colors.orange,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                status == "Sudah Check In"
+                                    ? Colors.green.withOpacity(0.1)
+                                    : Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color:
+                                  status == "Sudah Check In"
+                                      ? Colors.green.withOpacity(0.3)
+                                      : Colors.orange.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Text(
+                            status == "Sudah Check In"
+                                ? "✓ Sudah melakukan check-in hari ini"
+                                : "⏰ Belum melakukan check-in",
+                            style: TextStyle(
+                              color:
+                                  status == "Sudah Check In"
+                                      ? Colors.green.shade700
+                                      : Colors.orange.shade700,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Location Card
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
                             children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF1B3C53,
+                                  ).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Color(0xFF1B3C53),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               const Text(
-                                "Waktu Kehadiran",
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                'Lokasi Anda',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        dayFormatted,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(dateFormatted),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Check In",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(checkInTime),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Check Out",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(checkOutTime),
-                                    ],
-                                  ),
-                                ],
+                              const Spacer(),
+                              IconButton(
+                                onPressed: _getCurrentLocation,
+                                icon: const Icon(
+                                  Icons.refresh,
+                                  color: Color(0xFF1B3C53),
+                                ),
+                                tooltip: 'Refresh Lokasi',
                               ),
-                              const SizedBox(height: 12),
-                              Text.rich(
-                                TextSpan(
-                                  text: 'Status: ',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: status,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+                            ],
+                          ),
+                        ),
+                        Container(
+                          height: 200,
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.grey.withOpacity(0.2),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child:
+                                _isLoadingLocation
+                                    ? Container(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      child: const Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            CircularProgressIndicator(
+                                              color: Color(0xFF1B3C53),
+                                            ),
+                                            SizedBox(height: 12),
+                                            Text(
+                                              'Memuat lokasi...',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                    )
+                                    : GoogleMap(
+                                      initialCameraPosition: CameraPosition(
+                                        target:
+                                            _currentPosition ??
+                                            const LatLng(-6.2, 106.816666),
+                                        zoom: 15,
+                                      ),
+                                      onMapCreated: (controller) {
+                                        mapController = controller;
+                                      },
+                                      markers:
+                                          _marker != null ? {_marker!} : {},
+                                      myLocationButtonEnabled: true,
+                                      myLocationEnabled: true,
+                                      zoomControlsEnabled: false,
+                                      mapToolbarEnabled: false,
                                     ),
-                                  ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                color: Colors.grey,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _currentAddress,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Fitur foto belum diaktifkan."),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF1B3C53),
-                              minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                side: const BorderSide(
-                                  color: Color(0xFF1B3C53),
-                                ),
-                              ),
-                            ),
-                            icon: const Icon(Icons.camera_alt),
-                            label: const Text("Ambil Foto"),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1B3C53), Color(0xFF456882)],
                           ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed:
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1B3C53).withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap:
                                 _currentPosition == null
                                     ? null
                                     : _handleCheckIn,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1B3C53),
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.fingerprint,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Check In Sekarang',
+                                    style: TextStyle(
+                                      color:
+                                          _currentPosition == null
+                                              ? Colors.white.withOpacity(0.5)
+                                              : Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: const Text("Check In"),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+
+                      const SizedBox(height: 16),
+
+                      Container(
+                        width: double.infinity,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF1B3C53).withOpacity(0.2),
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              showCustomSnackbar(
+                                context,
+                                "Fitur foto belum diaktifkan.",
+                                type: SnackbarType.info,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.camera_alt,
+                                    color: Color(0xFF1B3C53),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Ambil Foto',
+                                    style: TextStyle(
+                                      color: Color(0xFF1B3C53),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: color, size: 24),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/snackbar_util.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_absen.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_history.dart';
@@ -42,6 +43,7 @@ class _MainState extends State<Main> {
   final TextEditingController _alasanController = TextEditingController();
   List<History>? _historyData;
   bool _isLoadingHistory = true;
+  DateTime? _selectedIzinDate;
 
   @override
   void initState() {
@@ -70,9 +72,11 @@ class _MainState extends State<Main> {
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         final data = GetProfile.fromJson(jsonResponse);
-        setState(() {
-          _profile = data.data;
-        });
+        if (mounted) {
+          setState(() {
+            _profile = data.data;
+          });
+        }
       }
     } catch (e) {
       print("Error: $e");
@@ -80,21 +84,26 @@ class _MainState extends State<Main> {
   }
 
   Future<void> fetchPhotoProfile() async {
+    if (!mounted) return;
     setState(() {
       isLoadingPhoto = true;
     });
 
     try {
       final photo = await _authService.getPhotoProfile();
-      setState(() {
-        _photoProfile = photo;
-        isLoadingPhoto = false;
-      });
+      if (mounted) {
+        setState(() {
+          _photoProfile = photo;
+          isLoadingPhoto = false;
+        });
+      }
     } catch (e) {
       print("Error loading photo profile: $e");
-      setState(() {
-        isLoadingPhoto = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoadingPhoto = false;
+        });
+      }
     }
   }
 
@@ -134,15 +143,12 @@ class _MainState extends State<Main> {
     final url = _profileData?.profilePhoto;
     if (url != null && url.isNotEmpty) {
       if (url.startsWith('data:image')) {
-        // base64 with prefix
         return MemoryImage(base64Decode(url.split(',').last));
       } else if (url.length > 100) {
-        // base64 without prefix
         return MemoryImage(base64Decode(url));
       } else if (url.startsWith('http')) {
         return NetworkImage(url);
       } else {
-        // path only
         return NetworkImage('https://appabsensi.mobileprojp.com/public/$url');
       }
     }
@@ -150,25 +156,31 @@ class _MainState extends State<Main> {
   }
 
   Future<void> fetchTodayAttendance() async {
+    if (!mounted) return;
     setState(() {
       _isLoadingAttendance = true;
     });
 
     try {
       final attendance = await _checkServis.getTodayAttendance();
-      setState(() {
-        _todayAttendance = attendance;
-        _isLoadingAttendance = false;
-      });
+      if (mounted) {
+        setState(() {
+          _todayAttendance = attendance;
+          _isLoadingAttendance = false;
+        });
+      }
     } catch (e) {
       print("Error fetching attendance: $e");
-      setState(() {
-        _isLoadingAttendance = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingAttendance = false;
+        });
+      }
     }
   }
 
   Future<void> fetchHistoryData() async {
+    if (!mounted) return;
     setState(() {
       _isLoadingHistory = true;
     });
@@ -176,24 +188,29 @@ class _MainState extends State<Main> {
     try {
       final historyResponse = await _attendanceService.fetchHistoryAttendance();
       if (historyResponse?.data != null) {
-        // Get only the latest 4 records
         final latestHistory = historyResponse!.data!.take(4).toList();
-        setState(() {
-          _historyData = latestHistory;
-          _isLoadingHistory = false;
-        });
+        if (mounted) {
+          setState(() {
+            _historyData = latestHistory;
+            _isLoadingHistory = false;
+          });
+        }
       } else {
+        if (mounted) {
+          setState(() {
+            _historyData = [];
+            _isLoadingHistory = false;
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching history: $e");
+      if (mounted) {
         setState(() {
           _historyData = [];
           _isLoadingHistory = false;
         });
       }
-    } catch (e) {
-      print("Error fetching history: $e");
-      setState(() {
-        _historyData = [];
-        _isLoadingHistory = false;
-      });
     }
   }
 
@@ -214,155 +231,191 @@ class _MainState extends State<Main> {
   Future<void> showIzinDialog() async {
     if (hasSubmittedIzin) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Anda sudah mengajukan izin hari ini!"),
-          backgroundColor: Colors.orange,
-        ),
+      showCustomSnackbar(
+        context,
+        "Anda sudah mengajukan izin hari ini!",
+        type: SnackbarType.warning,
       );
       return;
     }
 
     if (isCheckedIn) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Anda sudah melakukan check-in hari ini!"),
-          backgroundColor: Colors.blue,
-        ),
+      showCustomSnackbar(
+        context,
+        "Anda sudah melakukan check-in hari ini!",
+        type: SnackbarType.info,
       );
       return;
     }
 
-    // Simpan context utama sebelum dialog muncul
+    // Set default tanggal izin ke hari ini
+    _selectedIzinDate = DateTime.now();
     final currentContext = context;
 
-    showDialog(
+    await showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Text(
-              "Ajukan Izin",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Silakan tulis alasan izin Anda:",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          (context) => StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                SizedBox(height: 12),
-                TextField(
-                  controller: _alasanController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: "Tulis alasan izin...",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Color(0xFF1B3C53)),
-                    ),
-                  ),
+                title: Text(
+                  "Ajukan Izin",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _alasanController.clear();
-                },
-                child: Text("Batal", style: TextStyle(color: Colors.red)),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final alasan = _alasanController.text.trim();
-                  if (alasan.isEmpty) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(currentContext).showSnackBar(
-                      SnackBar(
-                        content: Text("Alasan tidak boleh kosong!"),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                    return;
-                  }
-
-                  Navigator.of(context).pop(); // Tutup dialog
-
-                  // Tampilkan SnackBar loading
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(currentContext).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Silakan pilih tanggal dan tulis alasan izin Anda:",
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 20,
+                          color: Color(0xFF1B3C53),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate:
+                                    _selectedIzinDate ?? DateTime.now(),
+                                firstDate: DateTime.now().subtract(
+                                  const Duration(days: 7),
+                                ),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 365),
+                                ),
+                              );
+                              if (picked != null) {
+                                setStateDialog(() {
+                                  _selectedIzinDate = picked;
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Text(
+                                _selectedIzinDate != null
+                                    ? "${_selectedIzinDate!.day.toString().padLeft(2, '0')}-${_selectedIzinDate!.month.toString().padLeft(2, '0')}-${_selectedIzinDate!.year}"
+                                    : "Pilih tanggal izin",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF1B3C53),
+                                ),
                               ),
                             ),
                           ),
-                          SizedBox(width: 16),
-                          Text("Mengajukan izin..."),
-                        ],
-                      ),
-                      backgroundColor: Color(0xFF1B3C53),
-                      duration: Duration(seconds: 2),
+                        ),
+                      ],
                     ),
-                  );
-
-                  try {
-                    final result = await _izinService.postIzin(
-                      alasanIzin: alasan,
-                    );
-
-                    if (!mounted) return;
-
-                    if (result != null && result.message != null) {
-                      ScaffoldMessenger.of(currentContext).showSnackBar(
-                        SnackBar(
-                          content: Text("Izin berhasil diajukan!"),
-                          backgroundColor: Colors.green,
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _alasanController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: "Tulis alasan izin...",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
-                      _alasanController.clear();
-                      fetchTodayAttendance(); // Refresh data
-                    } else {
-                      ScaffoldMessenger.of(currentContext).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "Gagal mengajukan izin. Silakan coba lagi.",
-                          ),
-                          backgroundColor: Colors.red,
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Color(0xFF1B3C53)),
                         ),
-                      );
-                    }
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(currentContext).showSnackBar(
-                      SnackBar(
-                        content: Text("Terjadi kesalahan: $e"),
-                        backgroundColor: Colors.red,
                       ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1B3C53),
+                    ),
+                  ],
                 ),
-                child: Text("Kirim", style: TextStyle(color: Colors.white)),
-              ),
-            ],
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _alasanController.clear();
+                    },
+                    child: Text("Batal", style: TextStyle(color: Colors.red)),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final alasan = _alasanController.text.trim();
+                      if (alasan.isEmpty) {
+                        if (!mounted) return;
+                        showCustomSnackbar(
+                          currentContext,
+                          "Alasan tidak boleh kosong!",
+                          type: SnackbarType.warning,
+                        );
+                        return;
+                      }
+                      if (_selectedIzinDate == null) {
+                        showCustomSnackbar(
+                          currentContext,
+                          "Pilih tanggal izin terlebih dahulu!",
+                          type: SnackbarType.warning,
+                        );
+                        return;
+                      }
+                      Navigator.of(context).pop();
+                      showCustomSnackbar(
+                        currentContext,
+                        "Mengajukan izin...",
+                        type: SnackbarType.info,
+                        icon: Icons.hourglass_top_rounded,
+                      );
+                      try {
+                        final result = await _izinService.postIzin(
+                          alasanIzin: alasan,
+                          tanggalIzin: _selectedIzinDate,
+                        );
+                        if (!mounted) return;
+                        if (result != null && result.message != null) {
+                          showCustomSnackbar(
+                            currentContext,
+                            "Izin berhasil diajukan!",
+                            type: SnackbarType.success,
+                          );
+                          _alasanController.clear();
+                          fetchTodayAttendance();
+                        } else {
+                          showCustomSnackbar(
+                            currentContext,
+                            "Gagal mengajukan izin. Silakan coba lagi.",
+                            type: SnackbarType.error,
+                          );
+                        }
+                      } catch (e) {
+                        if (!mounted) return;
+                        showCustomSnackbar(
+                          currentContext,
+                          "Terjadi kesalahan: $e",
+                          type: SnackbarType.error,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF1B3C53),
+                    ),
+                    child: Text("Kirim", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              );
+            },
           ),
     );
   }
@@ -372,11 +425,10 @@ class _MainState extends State<Main> {
       LocationPermission permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Izin lokasi ditolak!"),
-            backgroundColor: Colors.red,
-          ),
+        showCustomSnackbar(
+          context,
+          "Izin lokasi ditolak!",
+          type: SnackbarType.error,
         );
         return;
       }
@@ -400,28 +452,25 @@ class _MainState extends State<Main> {
       );
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Berhasil Check Out!"),
-            backgroundColor: Colors.green,
-          ),
+        showCustomSnackbar(
+          context,
+          "Berhasil Check Out!",
+          type: SnackbarType.success,
         );
         fetchTodayAttendance();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Gagal Check Out!"),
-            backgroundColor: Colors.red,
-          ),
+        showCustomSnackbar(
+          context,
+          "Gagal Check Out!",
+          type: SnackbarType.error,
         );
       }
     } catch (e) {
       print("Error saat check out: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Terjadi kesalahan saat Check Out"),
-          backgroundColor: Colors.red,
-        ),
+      showCustomSnackbar(
+        context,
+        "Terjadi kesalahan saat Check Out",
+        type: SnackbarType.error,
       );
     }
   }
@@ -429,6 +478,7 @@ class _MainState extends State<Main> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -496,7 +546,7 @@ class _MainState extends State<Main> {
                                     content: Text(
                                       "Kamu sudah check-in hari ini!",
                                     ),
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor: Colors.orange,
                                   ),
                                 );
                               }
@@ -506,7 +556,7 @@ class _MainState extends State<Main> {
                                     content: Text(
                                       "Silakan lakukan check-in di halaman kehadiran",
                                     ),
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor: Colors.red,
                                   ),
                                 );
                               },
@@ -588,27 +638,6 @@ class _MainState extends State<Main> {
             ),
             SizedBox(height: 20),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.location_on, color: Colors.red, size: 24),
-                  SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      'Jl. Kebembem II No.83G 9, Kec. Jagakarsa, Kota Jakarta selatan, Indonesia',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 24),
-            Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -627,7 +656,6 @@ class _MainState extends State<Main> {
                         context,
                         MaterialPageRoute(builder: (context) => Riwayat()),
                       );
-                      // Setelah kembali dari halaman Riwayat, refresh data history
                       fetchHistoryData();
                     },
                     child: Text(
@@ -844,7 +872,7 @@ class _MainState extends State<Main> {
             else
               (_historyData != null && _historyData!.isNotEmpty)
                   ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
                     child: ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
@@ -859,7 +887,7 @@ class _MainState extends State<Main> {
                         final isIzin = item.status == 'izin';
 
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
+                          padding: EdgeInsets.only(bottom: 8.0),
                           child: Card(
                             margin: EdgeInsets.zero,
                             color:

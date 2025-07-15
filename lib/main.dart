@@ -27,7 +27,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Hadirly',
-      home: SplashScreen(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => SplashScreen(),
+        Login.id: (context) => const Login(),
+        BottomNavScreen.id: (context) => const BottomNavScreen(),
+      },
     );
   }
 }
@@ -48,17 +56,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkToken() async {
     final token = await SharedPref.getToken();
-    await Future.delayed(const Duration(seconds: 1)); // animasi splash opsional
+    await Future.delayed(const Duration(seconds: 3));
     if (token != null && token.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const BottomNavScreen()),
-      );
+      Navigator.pushReplacementNamed(context, BottomNavScreen.id);
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const Login()),
-      );
+      Navigator.pushReplacementNamed(context, Login.id);
     }
   }
 
