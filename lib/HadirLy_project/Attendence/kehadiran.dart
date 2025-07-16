@@ -215,7 +215,7 @@ class _CheckInState extends State<CheckIn> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Kehadiran',
                                     style: TextStyle(
                                       color: Colors.white,
@@ -226,7 +226,7 @@ class _CheckInState extends State<CheckIn> {
                                   ),
                                   Text(
                                     '$dayFormatted, $dateFormatted',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white70,
                                       fontSize: 14,
                                     ),
@@ -257,8 +257,6 @@ class _CheckInState extends State<CheckIn> {
               ),
             ),
           ),
-
-          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -361,9 +359,7 @@ class _CheckInState extends State<CheckIn> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Location Card
+                  SizedBox(height: 24),
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -373,7 +369,7 @@ class _CheckInState extends State<CheckIn> {
                         BoxShadow(
                           color: Colors.black.withOpacity(0.08),
                           blurRadius: 20,
-                          offset: const Offset(0, 8),
+                          offset: Offset(0, 8),
                         ),
                       ],
                     ),
@@ -381,15 +377,13 @@ class _CheckInState extends State<CheckIn> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(20),
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF1B3C53,
-                                  ).withOpacity(0.1),
+                                  color: Color(0xFF1B3C53).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -398,18 +392,18 @@ class _CheckInState extends State<CheckIn> {
                                   size: 20,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              const Text(
+                              SizedBox(width: 12),
+                              Text(
                                 'Lokasi Anda',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const Spacer(),
+                              Spacer(),
                               IconButton(
                                 onPressed: _getCurrentLocation,
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.refresh,
                                   color: Color(0xFF1B3C53),
                                 ),
@@ -420,7 +414,7 @@ class _CheckInState extends State<CheckIn> {
                         ),
                         Container(
                           height: 200,
-                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          margin: EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
@@ -457,7 +451,7 @@ class _CheckInState extends State<CheckIn> {
                                       initialCameraPosition: CameraPosition(
                                         target:
                                             _currentPosition ??
-                                            const LatLng(-6.2, 106.816666),
+                                            LatLng(-6.2, 106.816666),
                                         zoom: 15,
                                       ),
                                       onMapCreated: (controller) {
@@ -481,11 +475,11 @@ class _CheckInState extends State<CheckIn> {
                                 color: Colors.grey,
                                 size: 16,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _currentAddress,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey,
                                   ),
@@ -500,16 +494,14 @@ class _CheckInState extends State<CheckIn> {
                     ),
                   ),
 
-                  const SizedBox(height: 32),
-
-                  // Action Buttons
+                  SizedBox(height: 32),
                   Column(
                     children: [
                       Container(
                         width: double.infinity,
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [Color(0xFF1B3C53), Color(0xFF456882)],
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -530,13 +522,11 @@ class _CheckInState extends State<CheckIn> {
                                     : _handleCheckIn,
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 24),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.fingerprint,
                                     color: Colors.white,
                                     size: 24,
@@ -560,60 +550,60 @@ class _CheckInState extends State<CheckIn> {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      //  SizedBox(height: 16),
 
-                      Container(
-                        width: double.infinity,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF1B3C53).withOpacity(0.2),
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              showCustomSnackbar(
-                                context,
-                                "Fitur foto belum diaktifkan.",
-                                type: SnackbarType.info,
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.camera_alt,
-                                    color: Color(0xFF1B3C53),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Ambil Foto',
-                                    style: TextStyle(
-                                      color: Color(0xFF1B3C53),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 48,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(12),
+                      //     border: Border.all(
+                      //       color: const Color(0xFF1B3C53).withOpacity(0.2),
+                      //     ),
+                      //   ),
+                      //   child: Material(
+                      //     color: Colors.transparent,
+                      //     child: InkWell(
+                      //       onTap: () {
+                      //         showCustomSnackbar(
+                      //           context,
+                      //           "Fitur foto belum diaktifkan.",
+                      //           type: SnackbarType.info,
+                      //         );
+                      //       },
+                      //       borderRadius: BorderRadius.circular(12),
+                      //       child: Container(
+                      //         padding: const EdgeInsets.symmetric(
+                      //           horizontal: 24,
+                      //         ),
+                      //         child: Row(
+                      //           mainAxisAlignment: MainAxisAlignment.center,
+                      //           children: [
+                      //             const Icon(
+                      //               Icons.camera_alt,
+                      //               color: Color(0xFF1B3C53),
+                      //               size: 20,
+                      //             ),
+                      //             const SizedBox(width: 8),
+                      //             const Text(
+                      //               'Ambil Foto',
+                      //               style: TextStyle(
+                      //                 color: Color(0xFF1B3C53),
+                      //                 fontSize: 14,
+                      //                 fontWeight: FontWeight.w600,
+                      //               ),
+                      //             ),
+                      //           ],
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                 ],
               ),
             ),

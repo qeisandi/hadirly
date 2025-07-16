@@ -596,40 +596,40 @@ class _MainState extends State<Main> {
                 SizedBox(width: 20),
                 Column(
                   children: [
-                    ElevatedButton(
-                      onPressed:
+                    GestureDetector(
+                      onTap:
                           (!isCheckedIn || isCheckedOut)
                               ? null
                               : handleCheckOut,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFD2C1B6),
+                      child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 30,
                           vertical: 16,
                         ),
-                        shape: RoundedRectangleBorder(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
                           borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            isCheckedOut ? 'Checked Out' : 'Check Out',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Color(0xFF1B3C53),
-                              fontFamily: 'Inter',
+                        child: Column(
+                          children: [
+                            Text(
+                              isCheckedOut ? 'Checked Out' : 'Check Out',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Color(0xFF1B3C53),
+                                fontFamily: 'Inter',
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            getCheckOutTime(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF1B3C53),
+                            SizedBox(height: 8),
+                            Text(
+                              getCheckOutTime(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF1B3C53),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],

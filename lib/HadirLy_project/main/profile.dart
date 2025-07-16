@@ -366,15 +366,12 @@ class _ProfilePageState extends State<ProfilePage> {
     final url = _profileData?.profilePhoto;
     if (url != null && url.isNotEmpty) {
       if (url.startsWith('data:image')) {
-        // base64 with prefix
         return MemoryImage(base64Decode(url.split(',').last));
       } else if (url.length > 100) {
-        // base64 without prefix
         return MemoryImage(base64Decode(url));
       } else if (url.startsWith('http')) {
         return NetworkImage(url);
       } else {
-        // path only
         return NetworkImage('https://appabsensi.mobileprojp.com/public/$url');
       }
     }
@@ -384,20 +381,21 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B3C53),
+        backgroundColor: Color(0xFF1B3C53),
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-          ),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
         ),
         title: const Text(
-          'Profil Saya',
-          style: TextStyle(color: Colors.white, fontFamily: 'Inter'),
+          'Profile',
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Inter',
+            fontSize: 18,
+          ),
         ),
         actions: [
           IconButton(
@@ -433,7 +431,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       size: 64,
                       color: Colors.grey[400],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Text(
                       "Gagal memuat data profil",
                       style: TextStyle(
@@ -450,21 +448,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.only(bottom: 40, top: 20),
+                      padding: EdgeInsets.only(bottom: 40, top: 20),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [Color(0xFF1B3C53), Color(0xFF2C5A7A)],
                         ),
-                        borderRadius: const BorderRadius.vertical(
+                        borderRadius: BorderRadius.vertical(
                           bottom: Radius.circular(40),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1B3C53).withOpacity(0.3),
+                            color: Color(0xFF1B3C53).withOpacity(0.3),
                             blurRadius: 20,
-                            offset: const Offset(0, 10),
+                            offset: Offset(0, 10),
                           ),
                         ],
                       ),
@@ -491,7 +489,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   child:
                                       _isLoadingPhoto
-                                          ? const CircleAvatar(
+                                          ? CircleAvatar(
                                             radius: 60,
                                             backgroundColor: Colors.grey,
                                             child: CircularProgressIndicator(
@@ -503,7 +501,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                             backgroundImage: getProfileImage(),
                                           ),
                                 ),
-                                // Edit Photo Button
                                 Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -533,26 +530,24 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
 
-                          const SizedBox(height: 20),
-
-                          // User Info Section
+                          SizedBox(height: 20),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
                               children: [
                                 Text(
                                   _profileData?.name ?? '-',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 24,
                                     color: Colors.white,
                                     fontFamily: 'Gilroy',
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8),
                                 Text(
                                   _profileData?.email ?? '-',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.white70,
                                     fontWeight: FontWeight.w500,
@@ -562,7 +557,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 if (_profileData?.trainingTitle != null) ...[
                                   const SizedBox(height: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 6,
                                     ),
@@ -572,7 +567,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     child: Text(
                                       _profileData!.trainingTitle!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
@@ -581,9 +576,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ],
                                 if (_profileData?.batchKe != null) ...[
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 6,
                                     ),
@@ -593,7 +588,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     child: Text(
                                       "Batch ${_profileData!.batchKe}",
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
@@ -609,8 +604,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
 
                     const SizedBox(height: 30),
-
-                    // Menu Items Section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -629,27 +622,27 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
                             },
                           ),
-                          const SizedBox(height: 12),
-                          _buildMenuItem(
-                            icon: Icons.lock_outline,
-                            title: 'Ubah Kata Sandi',
-                            subtitle: 'Ganti password akun',
-                            iconColor: Colors.green,
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text(
-                                    "Fitur ini belum tersedia",
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
+                          //  SizedBox(height: 12),
+                          // _buildMenuItem(
+                          //   icon: Icons.lock_outline,
+                          //   title: 'Ubah Kata Sandi',
+                          //   subtitle: 'Ganti password akun',
+                          //   iconColor: Colors.green,
+                          //   onTap: () {
+                          //     ScaffoldMessenger.of(context).showSnackBar(
+                          //       SnackBar(
+                          //         content:  Text(
+                          //           "Fitur ini belum tersedia",
+                          //         ),
+                          //         behavior: SnackBarBehavior.floating,
+                          //         shape: RoundedRectangleBorder(
+                          //           borderRadius: BorderRadius.circular(10),
+                          //         ),
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
+                          SizedBox(height: 12),
                           _buildMenuItem(
                             icon: Icons.logout,
                             title: 'Keluar',

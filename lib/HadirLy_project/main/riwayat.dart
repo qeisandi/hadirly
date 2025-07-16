@@ -491,7 +491,6 @@ class _RiwayatState extends State<Riwayat> {
                                           ),
                                         ),
                                         SizedBox(width: 8),
-                                        // Delete Button
                                         GestureDetector(
                                           onTap:
                                               () =>
@@ -709,7 +708,6 @@ class _RiwayatState extends State<Riwayat> {
       );
 
       if (success) {
-        // Remove item from both lists
         setState(() {
           allData?.removeWhere((element) => element.id == item.id);
           filteredData?.removeWhere((element) => element.id == item.id);
