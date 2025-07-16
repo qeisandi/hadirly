@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/copyright_footer.dart';
 import 'package:hadirly/HadirLy_project/helper/Utils/snackbar_util.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_absen.dart';
@@ -1064,6 +1065,8 @@ class _MainState extends State<Main> {
                       ),
                     ),
                   ),
+            // Tambahkan copyright di bawah konten utama
+            CopyrightFooter(),
           ],
         ),
       ),

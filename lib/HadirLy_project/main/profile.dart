@@ -394,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Inter',
-            fontSize: 18,
+            fontSize: 20,
           ),
         ),
         actions: [

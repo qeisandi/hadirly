@@ -96,8 +96,8 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-          child: Column(
-            children: [
+        child: Column(
+          children: [
             // Header Section
             Container(
               width: double.infinity,
@@ -157,36 +157,36 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                 key: _formKey,
                 child: Column(
                   children: [
-              _buildInputField(
-                controller: _nameController,
-                label: 'Nama Lengkap',
-                icon: Icons.person_outline,
-                validatorMessage: 'Nama tidak boleh kosong',
-              ),
+                    _buildInputField(
+                      controller: _nameController,
+                      label: 'Nama Lengkap',
+                      icon: Icons.person_outline,
+                      validatorMessage: 'Nama tidak boleh kosong',
+                    ),
 
                     const SizedBox(height: 20),
 
-              _buildInputField(
-                controller: _emailController,
-                label: 'Email',
-                icon: Icons.email_outlined,
-              ),
+                    _buildInputField(
+                      controller: _emailController,
+                      label: 'Email',
+                      icon: Icons.email_outlined,
+                    ),
 
                     const SizedBox(height: 20),
 
-              _buildInputField(
-                controller: _phoneController,
-                label: 'Nomor HP',
-                icon: Icons.phone_android_outlined,
-                keyboardType: TextInputType.phone,
-              ),
+                    _buildInputField(
+                      controller: _phoneController,
+                      label: 'Nomor HP',
+                      icon: Icons.phone_android_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
 
                     const SizedBox(height: 20),
 
-              _buildInputField(
-                controller: _addressController,
-                label: 'Alamat',
-                icon: Icons.home_outlined,
+                    _buildInputField(
+                      controller: _addressController,
+                      label: 'Alamat',
+                      icon: Icons.home_outlined,
                       maxLines: 3,
                     ),
 
@@ -215,50 +215,53 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                           borderRadius: BorderRadius.circular(16),
                           onTap: _isLoading ? null : _submit,
                           child: Center(
-                            child: _isLoading
-                                ? const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-              SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text(
-                                        "Menyimpan...",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: 'Inter',
+                            child:
+                                _isLoading
+                                    ? const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  )
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.save_alt_outlined,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text(
-                                        "Simpan Perubahan",
-                    style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
+                                        SizedBox(width: 12),
+                                        Text(
+                                          "Menyimpan...",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Inter',
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    )
+                                    : const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.save_alt_outlined,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          "Simpan Perubahan",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Inter',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                           ),
                         ),
                       ),
@@ -299,11 +302,11 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                 color: Colors.blue[700],
                                 fontSize: 14,
                                 fontFamily: 'Inter',
-                  ),
-                ),
-              ),
-            ],
-          ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -336,15 +339,12 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         ],
       ),
       child: TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-        style: const TextStyle(
-          fontSize: 16,
-          fontFamily: 'Inter',
-        ),
-      decoration: InputDecoration(
-        labelText: label,
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        style: const TextStyle(fontSize: 16, fontFamily: 'Inter'),
+        decoration: InputDecoration(
+          labelText: label,
           labelStyle: TextStyle(
             color: Colors.grey[600],
             fontFamily: 'Inter',
@@ -357,18 +357,14 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
               color: const Color(0xFF1B3C53).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF1B3C53),
-              size: 20,
-            ),
+            child: Icon(icon, color: const Color(0xFF1B3C53), size: 20),
           ),
-        filled: true,
+          filled: true,
           fillColor: Colors.white,
-        border: OutlineInputBorder(
+          border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
+            borderSide: BorderSide.none,
+          ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(
@@ -378,38 +374,30 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(
-              color: Color(0xFF1B3C53),
-              width: 2,
-            ),
+            borderSide: const BorderSide(color: Color(0xFF1B3C53), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(
-              color: Colors.red,
-              width: 1,
-            ),
+            borderSide: const BorderSide(color: Colors.red, width: 1),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(
-              color: Colors.red,
-              width: 2,
-            ),
+            borderSide: const BorderSide(color: Colors.red, width: 2),
           ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
         ),
-      ),
-        validator: validatorMessage != null
-              ? (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return validatorMessage;
+        validator:
+            validatorMessage != null
+                ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return validatorMessage;
+                  }
+                  return null;
                 }
-                return null;
-              }
-              : null,
+                : null,
       ),
     );
   }

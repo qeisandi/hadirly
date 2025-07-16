@@ -101,10 +101,7 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                     const SizedBox(height: 8),
                     Text(
                       "Gagal mengambil data statistik",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                     ),
                   ],
                 ),
@@ -231,9 +228,9 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Today's Status Card
                   Container(
                     width: double.infinity,
@@ -254,18 +251,20 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: data.sudahAbsenHariIni == true
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.orange.withOpacity(0.1),
+                            color:
+                                data.sudahAbsenHariIni == true
+                                    ? Colors.green.withOpacity(0.1)
+                                    : Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
                             data.sudahAbsenHariIni == true
                                 ? Icons.check_circle
                                 : Icons.schedule,
-                            color: data.sudahAbsenHariIni == true
-                                ? Colors.green
-                                : Colors.orange,
+                            color:
+                                data.sudahAbsenHariIni == true
+                                    ? Colors.green
+                                    : Colors.orange,
                             size: 24,
                           ),
                         ),
@@ -273,7 +272,7 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+                            children: [
                               Text(
                                 "Status Hari Ini",
                                 style: TextStyle(
@@ -290,9 +289,10 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: data.sudahAbsenHariIni == true
-                                      ? Colors.green
-                                      : Colors.orange,
+                                  color:
+                                      data.sudahAbsenHariIni == true
+                                          ? Colors.green
+                                          : Colors.orange,
                                 ),
                               ),
                             ],
@@ -304,9 +304,10 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: data.sudahAbsenHariIni == true
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.orange.withOpacity(0.1),
+                            color:
+                                data.sudahAbsenHariIni == true
+                                    ? Colors.green.withOpacity(0.1)
+                                    : Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -314,18 +315,19 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: data.sudahAbsenHariIni == true
-                                  ? Colors.green
-                                  : Colors.orange,
+                              color:
+                                  data.sudahAbsenHariIni == true
+                                      ? Colors.green
+                                      : Colors.orange,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Detailed Stats
                   Text(
                     "Detail Statistik",
@@ -336,25 +338,25 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildDetailCard(
                     "Total Absensi",
-                  "${data.totalAbsen}",
-                  Icons.assignment,
+                    "${data.totalAbsen}",
+                    Icons.assignment,
                     const Color(0xFF1B3C53),
-                ),
-                const SizedBox(height: 12),
+                  ),
+                  const SizedBox(height: 12),
                   _buildDetailCard(
                     "Total Masuk",
                     "${data.totalMasuk}",
                     Icons.login,
                     Colors.green,
                   ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   _buildDetailCard(
-                  "Total Izin",
-                  "${data.totalIzin}",
-                  Icons.airline_seat_individual_suite,
+                    "Total Izin",
+                    "${data.totalIzin}",
+                    Icons.airline_seat_individual_suite,
                     Colors.orange,
                   ),
                 ],
@@ -409,40 +411,36 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
           ),
         ],
       ),
-        child: Row(
-          children: [
+      child: Row(
+        children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
               style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 color: Colors.grey[800],
               ),
-              ),
             ),
-            Text(
-              value,
+          ),
+          Text(
+            value,
             style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
               color: color,
             ),
-            ),
-          ],
+          ),
+        ],
       ),
     );
   }
