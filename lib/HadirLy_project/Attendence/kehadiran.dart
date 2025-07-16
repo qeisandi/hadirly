@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/copyright_footer.dart';
 import 'package:hadirly/HadirLy_project/helper/Utils/snackbar_util.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_cekin.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/check_servis.dart';
@@ -600,6 +601,7 @@ class _CheckInState extends State<CheckIn> {
                       //     ),
                       //   ),
                       // ),
+                      CopyrightFooter(),
                     ],
                   ),
 

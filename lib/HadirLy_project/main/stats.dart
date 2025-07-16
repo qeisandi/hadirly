@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/copyright_footer.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_stat.dart';
 import 'package:hadirly/HadirLy_project/helper/servis/history_servis.dart';
 import 'package:hadirly/HadirLy_project/main/profile.dart';
@@ -228,10 +229,7 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Today's Status Card
+                  SizedBox(height: 24),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -359,6 +357,7 @@ class _AbsenStatsPageState extends State<AbsenStatsPage> {
                     Icons.airline_seat_individual_suite,
                     Colors.orange,
                   ),
+                  CopyrightFooter(),
                 ],
               ),
             );

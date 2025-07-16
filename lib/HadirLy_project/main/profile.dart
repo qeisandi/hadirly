@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hadirly/HadirLy_project/helper/Utils/copyright_footer.dart';
 import 'package:hadirly/HadirLy_project/helper/endpoint/endpoint.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile.dart';
 import 'package:hadirly/HadirLy_project/helper/model/model_profile_photo.dart';
@@ -654,7 +655,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: 30),
+                    CopyrightFooter(),
                   ],
                 ),
               ),
