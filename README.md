@@ -1,16 +1,30 @@
-# hadirly
+# 📌 Hadirly - Attendance App
 
-A new Flutter project.
+## 📖 Deskripsi
+**Hadirly** adalah aplikasi absensi berbasis **Flutter** yang memanfaatkan **Geolocation** dan **Photo Check-In** untuk mencatat kehadiran karyawan atau anggota organisasi.  
+Aplikasi ini dirancang untuk memudahkan proses presensi secara **real-time** dan mengurangi kecurangan absensi manual.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Fitur Utama
+- ✅ Login & Register dengan autentikasi
+- 📍 Check-In menggunakan **GPS Location**
+- 📸 Upload foto saat Check-In / Check-Out
+- 🕒 Riwayat Kehadiran
+- 📝 Pengajuan Izin (sakit, cuti, dll.)
+- 🔒 Proteksi data dengan Token Authentication
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🛠️ Tech Stack
+- **Flutter & Dart**  
+- **Google Maps API**  
+- **REST API (Laravel backend)**  
+- **MySQL Database**  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## ⚙️ Instalasi & Menjalankan
+1. Clone repository
+   ```bash
+   git clone https://github.com/qeisandi/hadirly.git
